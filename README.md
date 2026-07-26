@@ -1,8 +1,21 @@
 # Customer Intelligence — Reference Implementation
 
+[![CI](https://github.com/GalacticaIA/customer-intelligence-reference/actions/workflows/ci.yml/badge.svg)](https://github.com/GalacticaIA/customer-intelligence-reference/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+
 Customer-analytics evidence on a single **synthetic, causal, reproducible**
 dataset: one data model feeding a series of cases — churn, next-best-offer,
 campaign incrementality, and the segmentation and value work built on top of them.
+
+<p align="center">
+  <img src="03-next-best-offer/outputs/gates.svg" alt="Each governance gate removes customers from the contact list, and each removed group went on to churn at a different rate — the cool-off window removes customers who churn at 24.4% against a base of 11.8%" width="820"/>
+</p>
+
+<p align="center">
+  <em>Every governance gate correlates with the outcome — and not in the same
+  direction. That is the finding the whole repository exists to make checkable.</em>
+</p>
 
 > **Everything here is synthetic.** No client data. The generator is seeded, so
 > the CSVs reproduce byte-for-byte from the code in this repository. See
