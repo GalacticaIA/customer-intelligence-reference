@@ -6,7 +6,8 @@
 
 Customer-analytics evidence on a single **synthetic, causal, reproducible**
 dataset: one data model feeding a series of cases — churn, next-best-offer,
-campaign incrementality, and the segmentation and value work built on top of them.
+campaign incrementality, actionable segmentation, and the value work built on
+top of them.
 
 <p align="center">
   <img src="03-next-best-offer/outputs/gates.svg" alt="Each governance gate removes customers from the contact list, and each removed group went on to churn at a different rate — the cool-off window removes customers who churn at 24.4% against a base of 11.8%" width="820"/>
@@ -67,7 +68,7 @@ Each case is a reproducible pipeline, a visible result and a permanent write-up.
 
 | # | Case | The real problem it shows | Status |
 |---|---|---|---|
-| 01 | Actionable segmentation | segments carry behaviour, need, risk, eligible offer, consent and a suggested action — not just RFM clusters | planned |
+| 01 | [Actionable segmentation](01-segmentation/) | segments carry behaviour, need, risk, eligible offer, consent and a suggested action — not just RFM clusters | **built** |
 | 02 | [Churn without leakage](02-churn-prediction/) | out-of-time split, calibration, explainable drivers, prioritisation by value — accuracy alone isn't success | **built** |
 | 03 | [Governed next-best-offer](03-next-best-offer/) | propensity/uplift **and** eligibility, consent, exclusions, contact policy | **built** |
 | 04 | ARPU / value decomposition | where revenue per user comes from and moves | planned |
@@ -85,6 +86,21 @@ expected value; applying the same rules **in the wrong order** costs 1.8× that
 again and silently sends 199 contacts against a capacity of 437. Against the
 answer key, a compliant Q1 campaign would have saved 9 customers instead of 39 —
 and the loss is **reach**, not response.
+
+**[01 · Actionable segmentation](01-segmentation/)** — the case to read if the
+question is *"we already have segments, are they doing anything?"*. It computes
+RFM as prescribed and then measures it: on a subscription, recency has **no
+variance at all** — one distinct value across the base, because everybody was
+invoiced last month — and frequency correlates with tenure at **1.0000**, because
+it *is* tenure. Two of the three dimensions are reading the company's own billing
+schedule. It then builds the risk-by-value grid, finds three of nine cells worth
+a contact, and attacks it: **45% of the base changes cell in six months**, almost
+all of it on the risk axis (41.3% against 6.0% for value), while segment *sizes*
+move 2.3% — so the dashboard is flat while half the people underneath have
+swapped places. Two of its own plays turn out to be refused by the catalogue
+rather than by policy, one of them contradicting the definition of the cell it
+was written for. Priced against the continuous ranking on the same budget, the
+grid loses 9.1%: **rank to choose who, segment to choose what.**
 
 **[02 · Churn without leakage](02-churn-prediction/)** — trains at one cutoff and
 scores six months later, then reruns the same model two dishonest ways to show
