@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uvx ruff check .
+
+  test:
+    name: Tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+
+      # The dataset is not committed — it is generated from a seed, so CI builds
+      # it before the suite runs. That is also the check that matters most here:
+      # if the generator drifts, every case downstream is reading a different
+      # world than the one its write-up describes.
+      - name: Generate the dataset
+        working-directory: data-model
+        run: uv run generate.py
+
+      - run: uvx pytest tests/ -q
