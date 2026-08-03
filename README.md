@@ -10,12 +10,13 @@ campaign incrementality, actionable segmentation, and the value work built on
 top of them.
 
 <p align="center">
-  <img src="03-next-best-offer/outputs/gates.svg" alt="Each governance gate removes customers from the contact list, and each removed group went on to churn at a different rate — the cool-off window removes customers who churn at 24.4% against a base of 11.8%" width="820"/>
+  <img src="03-next-best-offer/outputs/gates.svg" alt="Each governance gate removes customers from the contact list, and the groups they remove went on to churn at anywhere from 11.7% to 24.4% against a base of 11.8% — the cool-off window removes the riskiest of them" width="820"/>
 </p>
 
 <p align="center">
-  <em>Every governance gate correlates with the outcome — and not in the same
-  direction. That is the finding the whole repository exists to make checkable.</em>
+  <em>The governance gates do not remove a random slice: the groups they take out
+  churn from 11.7% to 24.4% against a base of 11.8%. That is the finding the whole
+  repository exists to make checkable.</em>
 </p>
 
 > **Everything here is synthetic.** No client data. The generator is seeded, so
@@ -78,10 +79,10 @@ Each case is a reproducible pipeline, a visible result and a permanent write-up.
 if the question is *"does governance slow the business down?"*. It decides who to
 contact with which offer, subject to consent, eligibility, exclusions and a
 contact policy that lives in the data model rather than in the scoring script.
-Findings: every gate correlates with the outcome and **not in the same
-direction** — the cool-off window is the most selective rule in the policy,
-removing customers who churn at 24.4% against a base of 11.8%, because they were
-contacted last quarter *for being* high risk. Governance costs 20% of the plan's
+Findings: the gates **do not remove a random slice** — the groups they take out
+churn at anywhere from 11.7% to 24.4% against a base of 11.8% — and the cool-off
+window is the most selective rule in the policy, removing the customers who churn
+at 24.4%, because they were contacted last quarter *for being* high risk. Governance costs 20% of the plan's
 expected value; applying the same rules **in the wrong order** costs 1.8× that
 again and silently sends 199 contacts against a capacity of 437. Against the
 answer key, a compliant Q1 campaign would have saved 9 customers instead of 39 —
