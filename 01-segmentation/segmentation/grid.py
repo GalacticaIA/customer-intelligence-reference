@@ -38,7 +38,7 @@ BAND_NAMES = ("low", "mid", "high")
 # tautology.
 BEHAVIOUR_LABELS: dict[str, str] = {
     "usage_trend": "usage trend",
-    "usage_gb_last3": "data used",
+    "balance_last3": "balance carried",
     "active_days_last3": "active days",
     "payment_problem_rate": "payment problems",
     "failed_invoices_last6": "failed invoices",
@@ -48,7 +48,7 @@ BEHAVIOUR_LABELS: dict[str, str] = {
     "app_logins_last3": "app logins",
     "self_service_last3": "self-service actions",
     "tenure_months": "tenure",
-    "data_headroom": "unused data allowance",
+    "limit_headroom": "unused credit limit",
     "retention_offer_taken": "took a retention offer",
 }
 

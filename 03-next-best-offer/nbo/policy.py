@@ -6,8 +6,8 @@ from the model. The model ranks; this decides who is on the list at all.
 Two families of rule, kept apart on purpose because they have different owners
 and different failure modes:
 
-* **eligibility** — a property of the offer and the customer's plan. Offering a
-  postpaid-only upgrade to a prepaid line, or "upgrade to M" to somebody already
+* **eligibility** — a property of the offer and the customer's product. Offering a
+  credit-only upgrade to a prepaid line, or "upgrade to M" to somebody already
   on L, is not a compliance breach: it is a broken product rule, and it is
   embarrassing in a way that costs response rates rather than fines. Derived
   from the shared catalogue (``offers.eligible_family``,
@@ -32,7 +32,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .data import Contact, ContactHistory, Offer, PlanLadder, Tables, _float, _int
+from .data import Contact, ContactHistory, Offer, ProductLadder, Tables, _float, _int
 
 # Rule identifiers, as they appear in the shared contact_policy table.
 CONSENT = "require_channel_consent"
@@ -185,12 +185,12 @@ class PermissionMatrix:
         return seen
 
 
-def _eligibility_refusals(offer: Offer, plan_id: str, ladder: PlanLadder) -> list[str]:
+def _eligibility_refusals(offer: Offer, product_id: str, ladder: ProductLadder) -> list[str]:
     """Product-rule refusals, read off the catalogue."""
     refusals = []
-    if offer.eligible_family != "any" and ladder.family[plan_id] != offer.eligible_family:
+    if offer.eligible_family != "any" and ladder.family[product_id] != offer.eligible_family:
         refusals.append(ELIG_FAMILY)
-    if offer.upgrade_to_rank is not None and ladder.rank[plan_id] >= offer.upgrade_to_rank:
+    if offer.upgrade_to_rank is not None and ladder.rank[product_id] >= offer.upgrade_to_rank:
         # The customer is already on that plan or a better one, so the "upgrade"
         # is a no-op or a downgrade. Nothing errors when this is skipped, which
         # is why it needs a name rather than a comment.
@@ -244,7 +244,7 @@ def evaluate(
     customer_ids: list[str],
     cutoff: str,
     policy: ContactPolicy,
-    ladder: PlanLadder,
+    ladder: ProductLadder,
     consent: dict[str, dict[str, bool]],
     history: ContactHistory,
     facts: CustomerFacts,
@@ -255,14 +255,14 @@ def evaluate(
     of the refusal list, not for correctness: a pair is permitted only when
     every rule permits it, so the result is the same whichever order they run.
     """
-    plan_of = {r["customer_id"]: r["current_plan_id"] for r in tables["customers"]}
+    product_of = {r["customer_id"]: r["current_product_id"] for r in tables["customers"]}
 
     matrix = PermissionMatrix(customer_ids=list(customer_ids),
                               offer_ids=[o.offer_id for o in offers])
     for cid in customer_ids:
-        plan_id = plan_of[cid]
+        product_id = product_of[cid]
         for offer in offers:
-            refusals = _eligibility_refusals(offer, plan_id, ladder)
+            refusals = _eligibility_refusals(offer, product_id, ladder)
             refusals += _policy_refusals(policy, offer, cid, cutoff, consent, history, facts)
             matrix.permissions[(cid, offer.offer_id)] = Permission(
                 customer_id=cid, offer_id=offer.offer_id, blocked_by=tuple(refusals),
@@ -299,7 +299,7 @@ class CampaignComplianceRow:
 def audit_campaigns(
     tables: Tables,
     offers: list[Offer],
-    ladder: PlanLadder,
+    ladder: ProductLadder,
     consent: dict[str, dict[str, bool]],
 ) -> list[CampaignComplianceRow]:
     """How the campaigns that already ran would fare under the policy.
@@ -311,7 +311,7 @@ def audit_campaigns(
     track keeps flagging, and it would manufacture violations that could not
     have been known at the time.
     """
-    plan_of = {r["customer_id"]: r["current_plan_id"] for r in tables["customers"]}
+    product_of = {r["customer_id"]: r["current_product_id"] for r in tables["customers"]}
     offer_by_id = {o.offer_id: o for o in offers}
 
     audience: dict[str, list[str]] = {}
@@ -328,8 +328,8 @@ def audit_campaigns(
         channel = campaign["channel"]
 
         consented = [c for c in exposed if consent.get(c, {}).get(channel, False)]
-        eligible = [c for c in exposed if not _eligibility_refusals(offer, plan_of[c], ladder)]
-        compliant = [c for c in consented if not _eligibility_refusals(offer, plan_of[c], ladder)]
+        eligible = [c for c in exposed if not _eligibility_refusals(offer, product_of[c], ladder)]
+        compliant = [c for c in consented if not _eligibility_refusals(offer, product_of[c], ladder)]
 
         rows.append(CampaignComplianceRow(
             campaign_id=campaign["campaign_id"],

@@ -35,10 +35,10 @@ for _name in ("01-segmentation", "02-churn-prediction", "03-next-best-offer",
         sys.path.insert(0, _path)
 
 import pytest  # noqa: E402
+from fintech import Config  # noqa: E402
 from segmentation import load_tables, run_case  # noqa: E402
 from segmentation.grid import Cuts, band_of, build_segments, load_playbook, quantile_cuts  # noqa: E402
 from segmentation.rfm import classic_rfm, correlation, tenure_of  # noqa: E402
-from telco import Config  # noqa: E402
 
 SEED = Config(seed=123, n_customers=800, n_months=18)
 PLAYBOOK = _TRACK / "01-segmentation" / "playbook.csv"
@@ -138,7 +138,7 @@ def test_every_grid_cell_has_a_play(result):
 
 def test_a_constant_dimension_reports_no_spread(tables, result):
     """Recency is constant here, and a constant must not produce a finding."""
-    months = sorted({r["period_month"] for r in tables["usage_monthly"]})
+    months = sorted({r["period_month"] for r in tables["activity_monthly"]})
     labels = {c: result.test.labels[c] for c in result.test.customer_ids}
     letters = classic_rfm(tables, result.test.cutoff, result.test.customer_ids, labels, months)
     recency = next(letter for letter in letters if letter.symbol == "R")
@@ -154,7 +154,7 @@ def test_a_constant_dimension_reports_no_spread(tables, result):
 
 def test_frequency_is_tenure(tables, result):
     """Invoice count is months-as-a-customer, not a behavioural measure."""
-    months = sorted({r["period_month"] for r in tables["usage_monthly"]})
+    months = sorted({r["period_month"] for r in tables["activity_monthly"]})
     labels = {c: result.test.labels[c] for c in result.test.customer_ids}
     letters = classic_rfm(tables, result.test.cutoff, result.test.customer_ids, labels, months)
     frequency = next(letter for letter in letters if letter.symbol == "F")
@@ -285,7 +285,7 @@ def test_upgrade_plays_are_refused_by_the_catalogue(result):
 
     Unlike the reachability gradient, this holds by construction rather than by
     luck — the grow cell is *defined* as the top third by value, and the top
-    third by value is the customers already at the top of the plan ladder.
+    third by value is the customers already at the top of the product ladder.
     """
     upgrades = [d for d in result.deliverability if d.offer_type == "upgrade"]
     assert upgrades, "the playbook should still contain an upgrade play"

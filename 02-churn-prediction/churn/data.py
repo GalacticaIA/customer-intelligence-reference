@@ -19,7 +19,7 @@ _DATA_MODEL = Path(__file__).resolve().parents[2] / "data-model"
 if str(_DATA_MODEL) not in sys.path:
     sys.path.insert(0, str(_DATA_MODEL))
 
-from telco import Config, generate  # noqa: E402
+from fintech import Config, generate  # noqa: E402
 
 Tables = dict[str, list[dict]]
 

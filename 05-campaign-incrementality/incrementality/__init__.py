@@ -1,6 +1,6 @@
 """Campaign incrementality — did the campaign cause anything, and can we tell?
 
-Reads the shared telco data model, finds the held-out control group the
+Reads the shared fintech data model, finds the held-out control group the
 retention campaigns were run with, and works through the readings of the same
 data that disagree with each other: the confounded ones available without a
 control, the intent-to-treat comparison the control was bought for, and the

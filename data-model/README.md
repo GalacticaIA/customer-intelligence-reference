@@ -1,4 +1,4 @@
-# Telco customer-intelligence — data model
+# Fintech customer-intelligence — data model
 
 A **synthetic, causal, reproducible** dataset that the five customer-analytics
 cases (segmentation, churn, next-best-offer, ARPU, incrementality) all read
@@ -33,13 +33,13 @@ Reference dimensions are tiny and fixed; facts scale with the population.
 
 | Table | Grain | Key | Notes |
 |---|---|---|---|
-| `plans` | one row per plan | `plan_id` | prepaid/postpaid, fee, data/voice caps, tier |
+| `products` | one row per product | `product_id` | prepaid/credit, fee, spend limit, included transactions, tier |
 | `offers` | one row per offer | `offer_id` | discount / data_bundle / upgrade; `eligible_family` and `upgrade_to_rank` say who it applies to |
 | `campaigns` | one row per campaign | `campaign_id` | objective (retention/upsell/crosssell) → `offer_id` |
 | `contact_policy` | one row per rule | `policy_id` | consent, cool-off, frequency cap, arrears, open complaints — see below |
-| `customers` | one row per customer | `customer_id` | signup, region, channel, age band, current plan, tenure |
+| `customers` | one row per customer | `customer_id` | signup, region, channel, age band, current product, tenure |
 | `subscriptions` | one spell per customer | `subscription_id` | active at cutoff (churn is modelled as future) |
-| `usage_monthly` | customer × month | (`customer_id`,`period_month`) | data_gb, voice, sms, active_days |
+| `activity_monthly` | customer × month | (`customer_id`,`period_month`) | balance_k, transactions, transfers, active_days |
 | `billing` | customer × month | `invoice_id` | billed/paid, paid_date, days_late, status (paid/late/failed) |
 | `digital_monthly` | customer × month | (`customer_id`,`period_month`) | app_logins, self_service, occasional NPS |
 | `support_interactions` | one ticket | `ticket_id` | reason, channel, escalated, resolved, csat |
@@ -55,8 +55,8 @@ Reference dimensions are tiny and fixed; facts scale with the population.
 consent requirement per channel, a cool-off window, a yearly frequency cap, an
 arrears rule and an open-complaint rule — each as a row with an identifier, a
 scope, a parameter, a unit and a rationale. `offers` carries the two eligibility
-facts alongside them: which plan family an offer is sold to, and, for upgrades,
-`upgrade_to_rank` — the position *within the customer's own family* of the plan
+facts alongside them: which product family an offer is sold to, and, for upgrades,
+`upgrade_to_rank` — the position *within the customer's own family* of the product
 the offer moves them to, so "is this actually an upgrade?" has one answer rather
 than one per consumer.
 
@@ -171,7 +171,7 @@ don't quote**; they move with the seed:
 ```
 data-model/
 ├── generate.py          # CLI entrypoint
-├── telco/
+├── fintech/
 │   ├── config.py        # seed, scale, base rates (every knob, documented)
 │   ├── model.py         # the causal generator, table by table
 │   └── writer.py        # dict-of-tables → CSV

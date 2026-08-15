@@ -32,6 +32,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   generated *before* the suite runs — if the generator drifts, every case
   downstream is reading a different world than its write-up describes.
 
+### Changed
+
+- **The demonstration data is a card issuer, not a telecom operator.** Product
+  catalogue, activity and cost model now read in fintech terms
+  (`credit_limit_k`, `balance_k`, `transactions`, `transfers`, cost per
+  thousand of balance carried). The generator itself is untouched — same seed,
+  same causal structure, same numbers in every case write-up.
+
 ### Planned
 
 - Case 04 · ARPU / value decomposition

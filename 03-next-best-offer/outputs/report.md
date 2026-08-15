@@ -33,7 +33,7 @@ Cases 02 and 05 take these audiences exactly as the campaign built them. Judged 
 | Q1 Retention Save | call | 520 | 31.7% | 100.0% | 165 |
 | Q3 Retention Save | sms | 511 | 56.0% | 100.0% | 286 |
 | Mid-year Upsell | email | 1,157 | 64.0% | 22.0% | 164 |
-| Data Cross-sell | push | 1,172 | 63.1% | 100.0% | 739 |
+| Limit Cross-sell | push | 1,172 | 63.1% | 100.0% | 739 |
 
 **Q1 Retention Save** went out by *call* — the channel with the lowest opt-in in the base — so 68.3% of the people it contacted had never agreed to be contacted that way. Nothing in the campaign report would show this: the response rate is computed over everyone contacted, and a customer who never opted in still answers the phone.
 
@@ -67,8 +67,8 @@ Three counts, because one would mislead. **Pairs blocked** is every refusal a ru
 | `POL_FREQ_CAP` — at the yearly contact cap | 2,145 | 545 | 429 | 12.6% | 15.2% |
 | `POL_OPEN_ESC` — open unresolved complaint | 2,202 | 397 | 422 | 20.4% | 19.0% |
 | `POL_COOLOFF` — inside the cool-off window | 1,985 | 293 | 397 | 19.6% | 24.4% |
-| `ELIG_FAMILY` — offer not sold to that plan family | 2,404 | 623 | 0 | — | — |
-| `ELIG_NOT_AN_UPGRADE` — already on that plan or better | 4,851 | 1,471 | 0 | — | — |
+| `ELIG_FAMILY` — offer not sold to that product family | 2,404 | 623 | 0 | — | — |
+| `ELIG_NOT_AN_UPGRADE` — already on that product or better | 4,851 | 1,471 | 0 | — | — |
 
 The wave's own churn rate is **11.8%**. A gate that removed a random slice of the base would sit on that number. Instead the groups they remove spread from 11.7% to 24.4% around it, in both directions:
 
@@ -103,7 +103,7 @@ Widen it further and the suppressed group *grows and gets safer*, because the wi
 
 ## Three lists
 
-![From promised plan to sendable list](plans.svg)
+![From promised list to sendable list](plans.svg)
 
 The same scores and the same rules, assembled three ways.
 
@@ -121,7 +121,7 @@ The last two columns are the part that is not about money. The ungoverned list c
 
 The offer mix moves with it:
 
-| List | OF_DISC10 | OF_DATA5 | OF_UP_M | OF_WAIVE |
+| List | OF_DISC10 | OF_LIM5 | OF_UP_M | OF_WAIVE |
 |---|---:|---:|---:|---:|
 | ungoverned (what the plan promised) | 0 | 139 | 130 | 168 |
 | governed (filter, then rank) | 8 | 237 | 94 | 98 |

@@ -1,4 +1,4 @@
-"""Generation parameters for the synthetic telco data model.
+"""Generation parameters for the synthetic fintech data model.
 
 Everything the generator needs to be *reproducible* lives here: a single seed,
 the size of the population, the length of history, and the base rates that shape
@@ -42,7 +42,7 @@ class Config:
     # These are the levers the downstream cases are meant to *recover*, so they
     # live in one place and are documented in data-model/README.md.
 
-    # Fraction of customers on prepaid (vs postpaid) plans.
+    # Fraction of customers on prepaid (vs credit) products.
     prepaid_share: float = 0.55
 
     # Baseline probability a billed invoice is paid late / fails, before the
@@ -59,7 +59,7 @@ class Config:
     # each observed driver moves the log-odds. Downstream churn models should be
     # able to recover the *sign and rough magnitude* of these — not the exact
     # value, because latent satisfaction and noise are deliberately unobserved.
-    churn_intercept: float = -3.6  # tuned to a ~13% 90-day base rate (realistic for telco)
+    churn_intercept: float = -3.6  # tuned to a ~13% 90-day base rate
     w_usage_decline: float = 1.6
     w_payment_problems: float = 1.1
     w_unresolved_support: float = 1.4
@@ -79,13 +79,13 @@ class Config:
     def output_tables(self) -> tuple[str, ...]:
         """Canonical table order — also the order they are written and tested."""
         return (
-            "plans",
+            "products",
             "offers",
             "campaigns",
             "contact_policy",
             "customers",
             "subscriptions",
-            "usage_monthly",
+            "activity_monthly",
             "billing",
             "digital_monthly",
             "support_interactions",

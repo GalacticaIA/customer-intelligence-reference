@@ -13,7 +13,7 @@ The axes are cut into equal thirds. Quantiles rather than round thresholds, deli
 
 ## First, the segmentation everyone already has
 
-RFM is the default, it is what a segmentation request usually means, and it is computed here exactly as prescribed — on `billing`, the transaction table of a telco. Then each dimension is measured.
+RFM is the default, it is what a segmentation request usually means, and it is computed here exactly as prescribed — on `billing`, the transaction table of a fintech. Then each dimension is measured.
 
 | | Dimension | Distinct values | Largest single value covers | Churn gap, top vs bottom fifth |
 |---|---|---:|---:|---|
@@ -40,14 +40,14 @@ Two axes, because an action needs two answers that no single score gives: *is th
 
 | Segment | Customers | Modelled risk | ARPU | Actual churn | Profit per customer | Measured profile |
 |---|---:|---:|---:|---:|---:|---|
-| **Rescue** | 501 | 23.4% | 49.86 | 20.2% | +4.30 | usage trend 0.7 sd lower; unresolved escalations 0.6 sd higher; data used 0.5 sd higher |
+| **Rescue** | 501 | 23.4% | 49.86 | 20.2% | +4.30 | usage trend 0.7 sd lower; unresolved escalations 0.6 sd higher; balance carried 0.5 sd higher |
 | **Rescue (economy)** | 458 | 23.5% | 19.11 | 20.7% | +0.49 | unresolved escalations 0.8 sd higher; usage trend 0.5 sd lower; active days 0.4 sd lower |
-| **Let go** | 500 | 23.5% | 10.29 | 19.8% | -0.58 | unresolved escalations 0.7 sd higher; active days 0.7 sd lower; unused data allowance 0.6 sd higher |
-| **Protect** | 504 | 8.8% | 49.27 | 10.9% | +0.62 | data used 0.8 sd higher; unresolved escalations 0.3 sd lower; app logins 0.3 sd lower |
-| **Watch** | 449 | 8.8% | 19.07 | 9.1% | -0.76 | data used 0.4 sd lower; app logins 0.3 sd lower; unresolved escalations 0.3 sd lower |
-| **Reprice** | 506 | 8.9% | 10.31 | 7.3% | -1.16 | data used 0.4 sd lower; unresolved escalations 0.3 sd lower; unused data allowance 0.3 sd higher |
-| **Grow** | 494 | 4.5% | 47.15 | 5.7% | -0.46 | data used 1.0 sd higher; unused data allowance 0.7 sd lower; active days 0.7 sd higher |
-| **Grow (bundle)** | 512 | 4.3% | 19.23 | 6.1% | -1.13 | app logins 0.6 sd higher; usage trend 0.5 sd higher; self-service actions 0.5 sd higher |
+| **Let go** | 500 | 23.5% | 10.29 | 19.8% | -0.58 | unresolved escalations 0.7 sd higher; active days 0.7 sd lower; unused credit limit 0.6 sd higher |
+| **Protect** | 504 | 8.8% | 49.27 | 10.9% | +0.62 | balance carried 0.8 sd higher; unresolved escalations 0.3 sd lower; app logins 0.3 sd lower |
+| **Watch** | 450 | 8.8% | 19.06 | 9.1% | -0.76 | balance carried 0.4 sd lower; app logins 0.3 sd lower; unresolved escalations 0.3 sd lower |
+| **Reprice** | 505 | 8.9% | 10.30 | 7.3% | -1.16 | balance carried 0.4 sd lower; unresolved escalations 0.3 sd lower; unused credit limit 0.3 sd higher |
+| **Grow** | 494 | 4.5% | 47.15 | 5.7% | -0.46 | balance carried 1.0 sd higher; unused credit limit 0.7 sd lower; active days 0.7 sd higher |
+| **Grow (limit)** | 512 | 4.3% | 19.23 | 6.1% | -1.13 | app logins 0.6 sd higher; usage trend 0.5 sd higher; self-service actions 0.5 sd higher |
 | **Self-serve** | 452 | 4.4% | 10.34 | 6.2% | -1.33 | app logins 0.7 sd higher; self-service actions 0.6 sd higher; usage trend 0.5 sd higher |
 
 **The profile column is measured, never written.** Each cell reports the features on which it departs furthest from the base, in units of the base's own spread. Naming a cell *disengaged high-value customers* because the name sounds right is how a segmentation becomes a story, and the story is unfalsifiable by construction.
@@ -64,9 +64,9 @@ The data model labels two observation cutoffs 6 months apart, so the same rule c
 
 ![Migration between the cutoffs](drift.svg)
 
-**45.0% of the base changed cell in 6 months**, and the two axes are not equally to blame: the risk band moved for 41.3% and the value band for 6.0%.
+**45.0% of the base changed cell in 6 months**, and the two axes are not equally to blame: the risk band moved for 41.3% and the value band for 6.1%.
 
-That asymmetry is the structural point. ARPU is the plan the customer is on — a commercial fact that changes when somebody signs something. Risk is behaviour, and behaviour is what the model is built to detect moving. **The grid crosses a photograph with a film**, and inherits the refresh rate of the film.
+That asymmetry is the structural point. ARPU is the product the customer is on — a commercial fact that changes when somebody signs something. Risk is behaviour, and behaviour is what the model is built to detect moving. **The grid crosses a photograph with a film**, and inherits the refresh rate of the film.
 
 For 25.7% of the base, it is not the label that changed but the decision: they moved between a cell that contacts and a cell that does not.
 
@@ -78,8 +78,8 @@ The largest moves are a legible deterioration path rather than noise:
 |---|---|---:|
 | Grow | Protect | 143 |
 | Protect | Rescue | 125 |
-| Watch | Grow (bundle) | 120 |
-| Let go | Reprice | 110 |
+| Watch | Grow (limit) | 120 |
+| Let go | Reprice | 109 |
 
 **This is a floor, and the floor is checked.** Scoring the earlier cutoff with the model fitted on it is in-sample — the score has partly memorised those customers, so they look more like themselves than they are. Measured that way migration is 40.2%; measured cross-fitted, with a model that never saw them, 45.0%. The comfortable method understates the problem, which is the direction that matters, and the figure quoted above is the honest one.
 
@@ -95,10 +95,10 @@ A segmentation ends in a sentence like *contact this cell with a retention offer
 | Rescue (economy) | 23.5% | 458 | 293 (64%) |
 | Let go | 23.5% | 500 | 337 (67%) |
 | Protect | 8.8% | 504 | 375 (74%) |
-| Watch | 8.8% | 449 | 345 (77%) |
-| Reprice | 8.9% | 506 | 391 (77%) |
+| Watch | 8.8% | 450 | 346 (77%) |
+| Reprice | 8.9% | 505 | 390 (77%) |
 | Grow | 4.5% | 494 | 375 (76%) |
-| Grow (bundle) | 4.3% | 512 | 405 (79%) |
+| Grow (limit) | 4.3% | 512 | 405 (79%) |
 | Self-serve | 4.4% | 452 | 364 (81%) |
 
 That column ignores which offer: it is the contact policy on its own. The next one asks the narrower question — can this cell receive the offer *its play prescribes*?
@@ -107,20 +107,20 @@ That column ignores which offer: it is the contact policy on its own. The next o
 |---|---|---:|---:|---:|---:|
 | **Rescue** | send a discount | 501 | 272 (54%) | 229 | 0 |
 | **Rescue (economy)** | send a discount | 458 | 256 (56%) | 202 | 0 |
-| **Reprice** | send an upgrade | 506 | 116 (23%) | 160 | 230 |
+| **Reprice** | send an upgrade | 505 | 116 (23%) | 160 | 229 |
 | **Grow** | send an upgrade | 494 | 97 (20%) | 103 | 294 |
-| **Grow (bundle)** | send a data bundle | 512 | 243 (47%) | 269 | 0 |
+| **Grow (limit)** | send a limit increase | 512 | 243 (47%) | 269 | 0 |
 
 **The policy leans against the cells that need it.** Judged on whether a customer can receive *any* offer — which is the only version in which the nine cells are comparable, since a play's own reach also depends on its channel — the lowest-risk third of the base is reachable at 78.5% and the highest-risk third at 64.4%, a gap of 14.1 points.
 
-The mechanism is not a coincidence: arrears, an open unresolved complaint and a recent contact are simultaneously the rules that suppress a contact and the facts the risk model reads as danger. Case 03 measured this gate by gate; here it lands on the plan.
+The mechanism is not a coincidence: arrears, an open unresolved complaint and a recent contact are simultaneously the rules that suppress a contact and the facts the risk model reads as danger. Case 03 measured this gate by gate; here it lands on the product.
 
 **What is not claimed:** that reachability falls monotonically with risk. It does not — cell by cell the ordering breaks, and nine cells of a few hundred customers cannot support a nine-step ordering. The direction of the gap between the extreme thirds holds across seeds; its *size* does not — on a smaller world with less contact history it shrinks to a couple of points. So the mechanism is worth designing around and the number is not worth quoting as a constant.
 
 **Two plays in this playbook are not a delivery problem — they are wrong.** *Reprice* and *Grow* are refused more often by the catalogue than by any policy, and the two cases fail for different reasons:
 
-- **Reprice** — 230 of 506 customers have *every* offer of this type refused by a product rule; 230 attributed to *offer not sold to that plan family*. The play asks for the plan that *fits* a low-usage customer, which is a move down the ladder. Every offer of this type is a move up — `upgrade_to_rank` only points at a higher rank — so the nearest available offer type was the one it got coded to. The catalogue has no entry for what this segment actually needs, and a play cannot be more executable than the catalogue it draws on.
-- **Grow** — 294 of 494 customers have *every* offer of this type refused by a product rule; 294 attributed to *already on that plan or better*. The cell is the highest-value third of the base, and the highest-value third is, mechanically, the customers already at the top of the plan ladder. The action contradicts the definition of the segment it was written for.
+- **Reprice** — 229 of 505 customers have *every* offer of this type refused by a product rule; 229 attributed to *offer not sold to that product family*. The play asks for the product that *fits* a low-usage customer, which is a move down the ladder. Every offer of this type is a move up — `upgrade_to_rank` only points at a higher rank — so the nearest available offer type was the one it got coded to. The catalogue has no entry for what this segment actually needs, and a play cannot be more executable than the catalogue it draws on.
+- **Grow** — 294 of 494 customers have *every* offer of this type refused by a product rule; 294 attributed to *already on that product or better*. The cell is the highest-value third of the base, and the highest-value third is, mechanically, the customers already at the top of the product ladder. The action contradicts the definition of the segment it was written for.
 
 They are left in, and reported, rather than quietly fixed. Nothing errors when a play does not apply; the campaign simply under-delivers and the segmentation is not suspected. Separating the two refusal families is what makes it visible at all — a single *unreachable* count would have buried it next to a consent problem, which has an entirely different remedy.
 
@@ -139,7 +139,7 @@ The two lists agree on 75.7% of their names, and the ranking wins by 174 — 9.1
 
 **That is not an argument against segmenting.** It is an argument against segmenting for *this*. The comparison is only possible because both methods were pointed at one question — *who gets the next contact* — and a single number answers that better than a grid can, which should not be surprising.
 
-What the ranking does not produce is everything else: it assigns no action to the 1,401 customers it never reaches, and it does not say what to send the ones it does. The playbook carries 3 distinct offer types and 3 plays that involve no outbound contact at all. A ranking has no opinion on any of it.
+What the ranking does not produce is everything else: it assigns no action to the 1,402 customers it never reaches, and it does not say what to send the ones it does. The playbook carries 3 distinct offer types and 3 plays that involve no outbound contact at all. A ranking has no opinion on any of it.
 
 So the honest division of labour is the one the numbers support: **rank to choose who, segment to choose what.** Using the grid as the selector costs 9.1% for nothing, because the ranking was already there.
 
@@ -158,7 +158,7 @@ Case 05 established the ceiling: pooled over the whole base, the retention exper
 | Watch | 193 | 3 | -0.0155 |
 | Reprice | 187 | 4 | -0.0214 |
 | Grow | 305 | 4 | -0.0131 |
-| Grow (bundle) | 268 | 6 | -0.0224 |
+| Grow (limit) | 268 | 6 | -0.0224 |
 | Self-serve | 205 | 4 | -0.0195 |
 
 Across the entire base the campaign changed **52 outcomes** among 2,552 treated customers. Split nine ways that is 5.8 per segment, and no segment reach even ten. Every ordering of these rows is decided by which handful of customers sat near their own threshold.

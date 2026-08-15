@@ -47,7 +47,7 @@ from .audit import CampaignAudit, audit_retention_campaigns, channel_reach  # no
 from .data import (  # noqa: E402
     ContactHistory,
     Offer,
-    PlanLadder,
+    ProductLadder,
     Tables,
     Wave,
     build_wave,
@@ -209,7 +209,7 @@ class CaseResult:
     priced: list[Offer] = field(default_factory=list)
     unpriced: list[Offer] = field(default_factory=list)
     # What happens when the unpriced offers are scored anyway, which is what an
-    # engine does by default. Reported as an experiment, not as the plan.
+    # engine does by default. Reported as an experiment, not as the product.
     speculative: Plan | None = None
 
     @property
@@ -286,7 +286,7 @@ def _consent_profiles(
 def _sensitivity(
     tables: Tables,
     result: CaseResult,
-    ladder: PlanLadder,
+    ladder: ProductLadder,
     consent: dict[str, dict[str, bool]],
     history: ContactHistory,
     facts: CustomerFacts,
@@ -311,13 +311,13 @@ def _sensitivity(
             cid for cid in matrix.customer_ids
             if any(COOL_OFF in matrix.permissions[(cid, oid)].blocked_by for oid in matrix.offer_ids)
         ]
-        plan = filter_then_rank(result.wave.customer_ids, result.offers, result.values,
+        product = filter_then_rank(result.wave.customer_ids, result.offers, result.values,
                                 matrix, result.wave.capacity)
         points.append(SensitivityPoint(
             value=float(window),
             blocked_customers=len(blocked),
             mean_churn_probability_blocked=result.mean_risk_of(blocked),
-            plan_expected_value=plan.expected_value,
+            plan_expected_value=product.expected_value,
             reachable_customers=len(matrix.reachable_customers()),
         ))
     return points
@@ -344,9 +344,9 @@ def run_case(
     catalogue = load_offers(tables)
     # Only offers a campaign has actually sent can be given an acceptance
     # probability from evidence. The rest are scored too — so the report can
-    # show what happens — but they are held out of the plan.
+    # show what happens — but they are held out of the product.
     offers = priced_offers(catalogue)
-    ladder = PlanLadder.build(tables)
+    ladder = ProductLadder.build(tables)
     consent = load_consent(tables)
     history = ContactHistory.build(tables)
     facts = CustomerFacts.build(tables, wave.cutoff, wave.customer_ids)

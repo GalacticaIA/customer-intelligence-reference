@@ -61,7 +61,7 @@ With hindsight the ceiling is ECE 0.0077 and slope 1.00 — recalibrating on the
 
 Coefficients on standardised features, so they are comparable across features. Two columns, because they answer different questions: **marginal** is the effect on its own — what a stakeholder means by "do unhappy customers churn more?" — and **conditional** is the effect given every other feature, which is what the model uses. Quoting the second as if it were the first is how an explainable model gets explained wrong.
 
-Because this dataset's causal structure is *known* (`data-model/telco/config.py`), the last column is a real check rather than a matter of taste. Of the 9 designed drivers that survive pruning: **5 recovered** with the correct sign, **0 contradicted**, and **4 are too weak to read individually** — their marginal effect is smaller than its own standard error. That last group is not a failure: some drivers are deliberately weak by design (a payment-problem *rate* around 0.1 against a weight of 1.1 moves the log-odds by about 0.11), and reporting the sign of a coefficient smaller than its noise would be the analytical error, not the finding.
+Because this dataset's causal structure is *known* (`data-model/fintech/config.py`), the last column is a real check rather than a matter of taste. Of the 9 designed drivers that survive pruning: **5 recovered** with the correct sign, **0 contradicted**, and **4 are too weak to read individually** — their marginal effect is smaller than its own standard error. That last group is not a failure: some drivers are deliberately weak by design (a payment-problem *rate* around 0.1 against a weight of 1.1 moves the log-odds by about 0.11), and reporting the sign of a coefficient smaller than its noise would be the analytical error, not the finding.
 
 | Feature | Conditional | Marginal | ± 2 s.e. | Designed | Verdict |
 |---|---:|---:|---:|:---:|---|
@@ -79,8 +79,8 @@ Because this dataset's causal structure is *known* (`data-model/telco/config.py`
 | `is_prepaid` | +0.064 | +0.039 | ±0.096 | — | — |
 | `tickets_last6` | +0.061 | +0.144 | ±0.090 | — | — |
 | `avg_days_late_last6` | -0.056 | -0.016 | ±0.097 | — | — |
-| `usage_gb_last3` ⇄ | +0.029 | -0.064 | ±0.104 | — | — |
-| `data_headroom` | +0.024 | +0.256 | ±0.106 | — | — |
+| `balance_last3` ⇄ | +0.029 | -0.064 | ±0.104 | — | — |
+| `limit_headroom` | +0.024 | +0.256 | ±0.106 | — | — |
 
 *⇄ marks a feature whose sign changes once the other features are present — not a bug, and not leakage: it means another feature already carries its information.*
 
@@ -88,7 +88,7 @@ Three features were dropped before the coefficients were read, because each dupl
 
 - `has_unresolved_escalation` — correlated +0.951 with `unresolved_escalations`
 - `monthly_fee` — correlated +0.997 with `arpu_last3`
-- `plan_tier` — correlated +0.929 with `arpu_last3`
+- `product_tier` — correlated +0.929 with `arpu_last3`
 
 This is not about accuracy; the ridge penalty absorbs collinearity and AUC barely moves. It is about the deliverable. Fitted unpruned, this model reports that *an unresolved escalation reduces churn* — the exact opposite of how the data was built. A model whose explanation is wrong is worse than one with no explanation, because someone will act on it.
 

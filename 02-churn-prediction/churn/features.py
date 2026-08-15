@@ -20,7 +20,7 @@ FEATURE_NAMES: tuple[str, ...] = (
     "tenure_months",
     "is_early_life",
     # usage trajectory
-    "usage_gb_last3",
+    "balance_last3",
     "usage_trend",
     "active_days_last3",
     # payment behaviour
@@ -35,11 +35,11 @@ FEATURE_NAMES: tuple[str, ...] = (
     # digital engagement
     "app_logins_last3",
     "self_service_last3",
-    # plan fit
+    # product fit
     "monthly_fee",
     "is_prepaid",
-    "plan_tier",
-    "data_headroom",
+    "product_tier",
+    "limit_headroom",
     # commercial history
     "retention_offer_taken",
 )
@@ -75,7 +75,7 @@ def _month_calendar(tables: dict[str, list[dict]]) -> list[str]:
     than re-deriving the generator's calendar anchor (and coupling this case to
     it), read the calendar off the observed months.
     """
-    return sorted({r["period_month"] for r in tables["usage_monthly"]})
+    return sorted({r["period_month"] for r in tables["activity_monthly"]})
 
 
 def _mean(values: list[float]) -> float:
@@ -99,12 +99,12 @@ def build_features(
     """
     wanted = set(customer_ids)
 
-    usage = _group([r for r in _before(tables["usage_monthly"], cutoff) if r["customer_id"] in wanted])
+    usage = _group([r for r in _before(tables["activity_monthly"], cutoff) if r["customer_id"] in wanted])
     billing = _group([r for r in _before(tables["billing"], cutoff) if r["customer_id"] in wanted])
     digital = _group([r for r in _before(tables["digital_monthly"], cutoff) if r["customer_id"] in wanted])
     support = _group([r for r in _before(tables["support_interactions"], cutoff) if r["customer_id"] in wanted])
 
-    plans = {r["plan_id"]: r for r in tables["plans"]}
+    products = {r["product_id"]: r for r in tables["products"]}
     customers = {r["customer_id"]: r for r in tables["customers"] if r["customer_id"] in wanted}
 
     # A retention offer taken *at or before* the cutoff is legitimate history,
@@ -129,7 +129,7 @@ def build_features(
     matrix: list[list[float]] = []
     for cid in customer_ids:
         cust = customers[cid]
-        plan = plans[cust["current_plan_id"]]
+        product = products[cust["current_product_id"]]
 
         u_all = usage.get(cid, [])
         b_all = billing.get(cid, [])
@@ -142,11 +142,11 @@ def build_features(
         # --- usage trajectory: level, and the trend that drives churn --------
         u_last3 = _last_n(u_all, 3)
         u_prior3 = _last_n(u_all[: max(0, len(u_all) - 3)], 3) if len(u_all) > 3 else []
-        gb_last3 = _mean([_f(r["data_gb_used"]) for r in u_last3])
-        gb_prior3 = _mean([_f(r["data_gb_used"]) for r in u_prior3])
+        bal_last3 = _mean([_f(r["balance_k"]) for r in u_last3])
+        bal_prior3 = _mean([_f(r["balance_k"]) for r in u_prior3])
         # Ratio of recent to previous usage. 1.0 = flat; < 1 = declining. Held
         # at 1.0 when there is no prior period rather than inventing a decline.
-        usage_trend = min(3.0, gb_last3 / gb_prior3) if gb_prior3 > 0.01 else 1.0
+        usage_trend = min(3.0, bal_last3 / bal_prior3) if bal_prior3 > 0.01 else 1.0
 
         # --- payment behaviour ------------------------------------------------
         problems = sum(1.0 if r["status"] == "failed" else 0.5 if r["status"] == "late" else 0.0 for r in b_all)
@@ -157,14 +157,14 @@ def build_features(
         recent_months = {r["period_month"] for r in _last_n(u_all, 6)}
         tickets_last6 = sum(1 for r in s_all if r["period_month"] in recent_months)
 
-        # --- plan fit ---------------------------------------------------------
-        cap = _f(plan["data_gb"], 1.0) or 1.0
-        headroom = (cap - gb_last3) / cap
+        # --- product fit ---------------------------------------------------------
+        cap = _f(product["credit_limit_k"], 1.0) or 1.0
+        headroom = (cap - bal_last3) / cap
 
         matrix.append([
             tenure,
             1.0 if tenure <= 6 else 0.0,
-            gb_last3,
+            bal_last3,
             usage_trend,
             _mean([_f(r["active_days"]) for r in u_last3]),
             problems / months_observed,
@@ -176,9 +176,9 @@ def build_features(
             1.0 if unresolved > 0 else 0.0,
             _mean([_f(r["app_logins"]) for r in _last_n(d_all, 3)]),
             _mean([_f(r["self_service_actions"]) for r in _last_n(d_all, 3)]),
-            _f(plan["monthly_fee"]),
-            1.0 if plan["family"] == "prepaid" else 0.0,
-            _f(plan["tier"]),
+            _f(product["monthly_fee"]),
+            1.0 if product["family"] == "prepaid" else 0.0,
+            _f(product["tier"]),
             headroom,
             1.0 if cid in took_retention_offer else 0.0,
         ])

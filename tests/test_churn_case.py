@@ -31,7 +31,7 @@ from churn import build_features, load_tables, run_case, scoreable_population  #
 from churn.features import FEATURE_NAMES, _before  # noqa: E402
 from churn.metrics import brier_score, evaluate, ks_statistic, log_loss, roc_auc  # noqa: E402
 from churn.model import CollinearityFilter, LogisticRegression, Standardiser  # noqa: E402
-from telco import Config  # noqa: E402
+from fintech import Config  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -59,7 +59,7 @@ def test_feature_builder_ignores_every_fact_after_the_cutoff(tables):
     clean = build_features(tables, population.cutoff, ids)
 
     poisoned = {name: list(rows) for name, rows in tables.items()}
-    for name in ("usage_monthly", "billing", "digital_monthly", "support_interactions"):
+    for name in ("activity_monthly", "billing", "digital_monthly", "support_interactions"):
         future = []
         for row in tables[name]:
             if row["customer_id"] in set(ids):

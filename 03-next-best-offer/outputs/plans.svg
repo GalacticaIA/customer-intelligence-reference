@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-label="Expected value from the promised plan to the sendable list">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-label="Expected value from the promised list to the sendable list">
   <text x="18.0" y="20.0" text-anchor="start" font-size="13" font-weight="normal" font-family="ui-sans-serif,system-ui,sans-serif" fill="#8b949e">From the plan that was promised to the list that goes out</text>
   <line x1="62" y1="354.0" x2="702" y2="354.0" stroke="#8b949e" stroke-opacity="0.18" stroke-width="1"/>
   <text x="54.0" y="358.0" text-anchor="end" font-size="10" font-weight="normal" font-family="ui-sans-serif,system-ui,sans-serif" fill="#8b949e">0</text>

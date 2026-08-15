@@ -111,9 +111,9 @@ SEGMENT_NAMES_ES = {
     "Let go": "Dejar ir",
     "Protect": "Proteger",
     "Watch": "Observar",
-    "Reprice": "Reajustar plan",
+    "Reprice": "Reajustar producto",
     "Grow": "Crecer",
-    "Grow (bundle)": "Crecer (paquete)",
+    "Grow (limit)": "Crecer (cupo)",
     "Self-serve": "Autogestión",
 }
 

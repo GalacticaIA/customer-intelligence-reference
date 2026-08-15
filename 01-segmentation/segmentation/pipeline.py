@@ -127,7 +127,7 @@ def run_case(
     # --- what the grid is ------------------------------------------------
     result.segments = build_segments(after, cuts, playbook, economics)
 
-    months = sorted({r["period_month"] for r in tables["usage_monthly"]})
+    months = sorted({r["period_month"] for r in tables["activity_monthly"]})
     labels = {c: test.labels[c] for c in test.customer_ids}
     result.letters = rfm.classic_rfm(tables, test.cutoff, test.customer_ids, labels, months)
     result.repaired_recency = rfm.engagement_recency(tables, test.cutoff, test.customer_ids, labels, months)

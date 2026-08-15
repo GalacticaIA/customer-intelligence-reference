@@ -32,7 +32,7 @@ if str(_INCREMENTALITY) not in sys.path:
 from incrementality.estimators import difference_in_proportions  # noqa: E402
 from incrementality.truth import Truth, load_truth  # noqa: E402
 
-from .data import Offer, PlanLadder, Tables, _int  # noqa: E402
+from .data import Offer, ProductLadder, Tables, _int  # noqa: E402
 from .policy import _eligibility_refusals  # noqa: E402
 
 
@@ -120,7 +120,7 @@ def _true_effect(truth: Truth, exposed: list[str], control: list[str]) -> float:
 def audit_retention_campaigns(
     tables: Tables,
     offers: list[Offer],
-    ladder: PlanLadder,
+    ladder: ProductLadder,
     consent: dict[str, dict[str, bool]],
 ) -> list[CampaignAudit]:
     """Re-read each retention campaign as if consent and eligibility had held.
@@ -130,7 +130,7 @@ def audit_retention_campaigns(
     later campaigns — judging a past campaign by a future it could not see would
     manufacture violations and is the same look-ahead this track keeps flagging.
     """
-    plan_of = {r["customer_id"]: r["current_plan_id"] for r in tables["customers"]}
+    product_of = {r["customer_id"]: r["current_product_id"] for r in tables["customers"]}
     offer_by_id = {o.offer_id: o for o in offers}
     cutoff = tables["churn_labels"][0]["observation_cutoff"]
 
@@ -161,7 +161,7 @@ def audit_retention_campaigns(
             return [
                 c for c in ids
                 if consent.get(c, {}).get(channel, False)
-                and not _eligibility_refusals(offer, plan_of[c], ladder)
+                and not _eligibility_refusals(offer, product_of[c], ladder)
             ]
 
         exposed, control = arms["exposed"], arms["control"]

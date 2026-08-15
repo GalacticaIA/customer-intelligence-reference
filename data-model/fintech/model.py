@@ -1,4 +1,4 @@
-"""Synthetic telco customer-intelligence data model.
+"""Synthetic fintech customer-intelligence data model.
 
 A deterministic, seeded generator that emits ~12 related tables with an
 **explicit causal structure**. The point of modelling the causality — rather
@@ -27,31 +27,31 @@ from .config import Config
 
 # --- Reference dimensions (small, fixed) ---------------------------------
 
-PLANS = [
-    # plan_id, name, family, monthly_fee, data_gb, voice_min, tier
+PRODUCTS = [
+    # product_id, name, family, monthly_fee, credit_limit_k, included_transactions, tier
     ("PP_S", "Prepaid S", "prepaid", 8.0, 3, 200, 1),
     ("PP_M", "Prepaid M", "prepaid", 12.0, 8, 400, 2),
     ("PP_L", "Prepaid L", "prepaid", 18.0, 20, 800, 3),
-    ("PO_S", "Postpaid S", "postpaid", 20.0, 15, 600, 2),
-    ("PO_M", "Postpaid M", "postpaid", 30.0, 40, 1200, 3),
-    ("PO_L", "Postpaid L", "postpaid", 45.0, 100, 3000, 4),
-    ("PO_XL", "Postpaid XL", "postpaid", 65.0, 300, 5000, 5),
+    ("CR_S", "Credit S", "credit", 20.0, 15, 600, 2),
+    ("CR_M", "Credit M", "credit", 30.0, 40, 1200, 3),
+    ("CR_L", "Credit L", "credit", 45.0, 100, 3000, 4),
+    ("CR_XL", "Credit XL", "credit", 65.0, 300, 5000, 5),
 ]
 
 OFFERS = [
     # offer_id, name, type, value, eligible_family, upgrade_to_rank
     #
-    # ``upgrade_to_rank`` is the position, *within the customer's own plan
-    # family*, of the plan the offer moves them to — so an upgrade offer is
+    # ``upgrade_to_rank`` is the position, *within the customer's own product
+    # family*, of the product the offer moves them to — so an upgrade offer is
     # eligible only for customers currently below that rank. It is blank for
-    # offers that do not change the plan. Without it, "Upgrade to M" is a string
+    # offers that do not change the product. Without it, "Upgrade to M" is a string
     # that every consumer has to parse for itself, and the customer already on L
     # gets offered a downgrade by four separate scripts that each re-derive the
     # rule slightly differently.
     ("OF_DISC10", "10% loyalty discount", "discount", 0.10, "any", None),
-    ("OF_DATA5", "+5 GB data bundle", "data_bundle", 5, "any", None),
+    ("OF_LIM5", "+5k limit increase", "limit_increase", 5, "any", None),
     ("OF_UP_M", "Upgrade to M", "upgrade", 1, "any", 2),
-    ("OF_UP_L", "Upgrade to L", "upgrade", 1, "postpaid", 3),
+    ("OF_UP_L", "Upgrade to L", "upgrade", 1, "credit", 3),
     ("OF_WAIVE", "Late-fee waiver", "discount", 0.05, "any", None),
 ]
 
@@ -89,7 +89,7 @@ CAMPAIGNS = [
     ("CMP_RET_Q1", "Q1 Retention Save", "call", "retention", "OF_DISC10", 5),
     ("CMP_RET_Q3", "Q3 Retention Save", "sms", "retention", "OF_WAIVE", 17),
     ("CMP_UP_MID", "Mid-year Upsell", "email", "upsell", "OF_UP_M", 11),
-    ("CMP_XSELL", "Data Cross-sell", "push", "crosssell", "OF_DATA5", 14),
+    ("CMP_XSELL", "Limit Cross-sell", "push", "crosssell", "OF_LIM5", 14),
 ]
 
 REGIONS = [
@@ -107,9 +107,9 @@ ACQ_CHANNELS = [
 ]
 AGE_BANDS = [("18-24", 0.18), ("25-34", 0.30), ("35-44", 0.24), ("45-59", 0.19), ("60+", 0.09)]
 CONSENT_CHANNELS = ("email", "sms", "push", "call")
-TICKET_REASONS = ("billing", "coverage", "device", "plan_change", "roaming", "other")
+TICKET_REASONS = ("billing", "card", "app", "product_change", "fraud", "other")
 
-_PLAN_BY_ID = {p[0]: p for p in PLANS}
+_PRODUCT_BY_ID = {p[0]: p for p in PRODUCTS}
 
 
 # --- Small helpers --------------------------------------------------------
@@ -153,8 +153,8 @@ class _Customer:
 
     __slots__ = (
         "cid", "signup_idx", "region", "acq_channel", "age_band",
-        "plan_id", "family", "contract_type",
-        "satisfaction", "price_sensitivity", "engagement_level", "plan_fit",
+        "product_id", "family", "contract_type",
+        "satisfaction", "price_sensitivity", "engagement_level", "product_fit",
         "usage_base", "usage_decline", "active_from", "active_to",
         # accumulated observed scores used by the churn model
         "payment_problem_score", "unresolved_support_score",
@@ -192,9 +192,9 @@ def _make_customers(cfg: Config, rng: Random) -> list[_Customer]:
         c.acq_channel = _weighted(rng, ACQ_CHANNELS)[0]
         c.age_band = _weighted(rng, AGE_BANDS)[0]
 
-        family = "prepaid" if rng.random() < cfg.prepaid_share else "postpaid"
-        plan = rng.choice([p for p in PLANS if p[2] == family])
-        c.plan_id = plan[0]
+        family = "prepaid" if rng.random() < cfg.prepaid_share else "credit"
+        product = rng.choice([p for p in PRODUCTS if p[2] == family])
+        c.product_id = product[0]
         c.family = family
         c.contract_type = family
 
@@ -202,10 +202,10 @@ def _make_customers(cfg: Config, rng: Random) -> list[_Customer]:
         c.satisfaction = rng.gauss(0.0, 1.0)
         c.price_sensitivity = _clamp(rng.gauss(0.0, 1.0), -3, 3)
         c.engagement_level = _clamp(rng.gauss(0.0, 1.0), -3, 3)
-        c.plan_fit = _clamp(rng.gauss(0.4, 0.8), -3, 3)  # slightly positive on avg
+        c.product_fit = _clamp(rng.gauss(0.4, 0.8), -3, 3)  # slightly positive on avg
 
-        # Usage baseline scaled by plan tier, with an individual multiplier.
-        tier = plan[6]
+        # Usage baseline scaled by product tier, with an individual multiplier.
+        tier = product[6]
         c.usage_base = max(0.2, rng.gauss(0.4 + 0.18 * tier, 0.5))
         # Some customers drift down over the window (an observable churn cause).
         c.usage_decline = _clamp(rng.gauss(0.0, 0.5) - 0.15, -1.5, 1.0)
@@ -219,10 +219,10 @@ def _make_customers(cfg: Config, rng: Random) -> list[_Customer]:
 
 
 def _emit_reference() -> dict[str, list[dict]]:
-    plans = [
-        dict(plan_id=p[0], name=p[1], family=p[2], monthly_fee=p[3],
-             data_gb=p[4], voice_min=p[5], tier=p[6])
-        for p in PLANS
+    products = [
+        dict(product_id=p[0], name=p[1], family=p[2], monthly_fee=p[3],
+             credit_limit_k=p[4], included_transactions=p[5], tier=p[6])
+        for p in PRODUCTS
     ]
     offers = [
         dict(offer_id=o[0], name=o[1], type=o[2], value=o[3], eligible_family=o[4],
@@ -238,7 +238,7 @@ def _emit_reference() -> dict[str, list[dict]]:
         dict(policy_id=p[0], applies_to=p[1], rule=p[2], value=p[3], unit=p[4], rationale=p[5])
         for p in CONTACT_POLICY
     ]
-    return {"plans": plans, "offers": offers, "campaigns": campaigns,
+    return {"products": products, "offers": offers, "campaigns": campaigns,
             "contact_policy": contact_policy}
 
 
@@ -254,13 +254,13 @@ def _emit_customers_and_subscriptions(cfg: Config, customers: list[_Customer]):
             acquisition_channel=c.acq_channel,
             age_band=c.age_band,
             contract_type=c.contract_type,
-            current_plan_id=c.plan_id,
+            current_product_id=c.product_id,
             tenure_months=tenure,
         ))
         sub_rows.append(dict(
             subscription_id=f"S{c.cid[1:]}_0",
             customer_id=c.cid,
-            plan_id=c.plan_id,
+            product_id=c.product_id,
             start_date=signup.isoformat(),
             end_date="",  # still active at cutoff; churn happens after
             status="active",
@@ -268,14 +268,14 @@ def _emit_customers_and_subscriptions(cfg: Config, customers: list[_Customer]):
     return cust_rows, sub_rows
 
 
-def _emit_usage(cfg: Config, customers: list[_Customer], rng: Random):
+def _emit_activity(cfg: Config, customers: list[_Customer], rng: Random):
     """Customer x month usage. Aggregated to *monthly* grain on purpose: churn,
     ARPU and RFM are modelled monthly, and daily would bloat the CSVs without
     adding analytical value. The schema doc states this deviation explicitly."""
     rows = []
     for c in customers:
-        plan = _PLAN_BY_ID[c.plan_id]
-        cap = plan[4]
+        product = _PRODUCT_BY_ID[c.product_id]
+        cap = product[4]
         n_active = cfg.n_months - c.active_from
         for k in range(n_active):
             idx = c.active_from + k
@@ -283,16 +283,16 @@ def _emit_usage(cfg: Config, customers: list[_Customer], rng: Random):
             progress = k / max(1, n_active - 1)
             trend = 1.0 + c.usage_decline * progress
             level = max(0.05, c.usage_base * trend * (1 + rng.gauss(0, 0.12)))
-            data_gb = round(_clamp(level * cap * 0.55, 0.05, cap * 1.4), 2)
-            voice = int(max(0, level * plan[5] * 0.5 * (1 + rng.gauss(0, 0.2))))
-            sms = int(max(0, rng.gauss(20 * level, 8)))
+            balance = round(_clamp(level * cap * 0.55, 0.05, cap * 1.4), 2)
+            txns = int(max(0, level * product[5] * 0.5 * (1 + rng.gauss(0, 0.2))))
+            n_transfers = int(max(0, rng.gauss(20 * level, 8)))
             active_days = int(_clamp(round(18 + 8 * level + rng.gauss(0, 3)), 1, 31))
             rows.append(dict(
                 customer_id=c.cid,
                 period_month=_month_start(cfg, idx).isoformat(),
-                data_gb_used=data_gb,
-                voice_min_used=voice,
-                sms_count=sms,
+                balance_k=balance,
+                transactions=txns,
+                transfers=n_transfers,
                 active_days=active_days,
             ))
     return rows
@@ -301,8 +301,8 @@ def _emit_usage(cfg: Config, customers: list[_Customer], rng: Random):
 def _emit_billing(cfg: Config, customers: list[_Customer], rng: Random):
     rows = []
     for c in customers:
-        plan = _PLAN_BY_ID[c.plan_id]
-        fee = plan[3]
+        product = _PRODUCT_BY_ID[c.product_id]
+        fee = product[3]
         n_active = cfg.n_months - c.active_from
         problems = 0
         for k in range(n_active):
@@ -416,7 +416,7 @@ def _risk_proxy_at(cfg: Config, c: _Customer, cutoff_idx: int) -> float:
 
     Evaluating it at an arbitrary cutoff — rather than only at the end of the
     window — is what lets the generator emit a second, earlier label without a
-    trace of hindsight in it. Traits (usage trend, engagement, plan fit) are
+    trace of hindsight in it. Traits (usage trend, engagement, product fit) are
     latent and time-invariant; the accumulated scores are re-derived from the
     events that had actually happened by ``cutoff_idx``.
     """
@@ -432,7 +432,7 @@ def _risk_proxy_at(cfg: Config, c: _Customer, cutoff_idx: int) -> float:
         + cfg.w_unresolved_support * _clamp(unresolved_support, 0, 3)
         + cfg.w_low_engagement * _clamp(-c.engagement_level, 0.0, 2.0)
         + cfg.w_early_life * (1.0 if months_observed <= 6 else 0.0)
-        + cfg.w_plan_misfit * _clamp(-c.plan_fit, 0.0, 2.0)
+        + cfg.w_plan_misfit * _clamp(-c.product_fit, 0.0, 2.0)
     )
 
 
@@ -456,7 +456,7 @@ def _emit_exposures(cfg: Config, customers: list[_Customer], rng: Random):
                 p_target = _sigmoid(-1.4 + cfg.retention_selection_bias * (risk - 2.0))
             elif objective in ("upsell", "crosssell"):
                 # Target engaged, higher-tier customers.
-                p_target = _sigmoid(-1.6 + 0.7 * c.engagement_level + 0.3 * _PLAN_BY_ID[c.plan_id][6])
+                p_target = _sigmoid(-1.6 + 0.7 * c.engagement_level + 0.3 * _PRODUCT_BY_ID[c.product_id][6])
             else:
                 p_target = 0.2
             if rng.random() >= p_target:
@@ -570,7 +570,7 @@ def generate(cfg: Config) -> dict[str, list[dict]]:
     tables["customers"] = cust_rows
     tables["subscriptions"] = sub_rows
 
-    tables["usage_monthly"] = _emit_usage(cfg, customers, rng)
+    tables["activity_monthly"] = _emit_activity(cfg, customers, rng)
     tables["billing"] = _emit_billing(cfg, customers, rng)  # sets payment scores
     tables["digital_monthly"] = _emit_digital(cfg, customers, rng)
     tables["support_interactions"] = _emit_support(cfg, customers, rng)  # sets support scores

@@ -111,7 +111,7 @@ def classic_rfm(
 ) -> list[Letter]:
     """The three letters, computed on the billing table as prescribed.
 
-    ``billing`` is the transaction table of a telco: one row per customer per
+    ``billing`` is the transaction table of a fintech: one row per customer per
     month, with an amount. It is the obvious place to point an RFM script, and
     it is what a retail-trained analyst will point one at.
     """

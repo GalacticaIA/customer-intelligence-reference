@@ -19,7 +19,7 @@ Full numbers, charts and reasoning: **[`outputs/report.md`](outputs/report.md)**
 ## First: two thirds of RFM does not exist here
 
 RFM is what a segmentation request usually means. Computed as prescribed, on the
-telco's own transaction table:
+fintech's own transaction table:
 
 ![What each dimension is worth](outputs/axes.svg)
 
@@ -85,7 +85,7 @@ can be applied twice and the answer counted.
 | whose contact decision flipped | 25.7% |
 | largest change in any segment's **size** | 2.3% |
 
-ARPU is the plan the customer is on: a commercial fact that moves when somebody
+ARPU is the product the customer is on: a commercial fact that moves when somebody
 signs something. Risk is behaviour, which is what the model exists to detect
 moving. Crossing them produces a grid with the refresh rate of its faster axis,
 and a quarterly plan built on it is acting, for a quarter of the base, on a
@@ -112,7 +112,7 @@ per offer type rather than per customer:
 |---|---|---:|---:|---:|
 | Rescue | send a discount | **54%** | 229 | 0 |
 | Rescue (economy) | send a discount | 56% | 202 | 0 |
-| Grow (bundle) | send a data bundle | 47% | 269 | 0 |
+| Grow (limit) | send a limit increase | 47% | 269 | 0 |
 | Reprice | send an upgrade | 23% | 160 | **230** |
 | Grow | send an upgrade | 20% | 103 | **294** |
 
@@ -136,10 +136,10 @@ around; the number is not worth quoting as a constant.
 *is* structural rather than lucky. Separating the two refusal families is the
 only reason it is visible:
 
-- **Grow** is told to offer the next plan up, and 294 of its 494 customers are
-  already on that plan or better. The cell is *defined* as the highest-value
+- **Grow** is told to offer the next product up, and 294 of its 494 customers are
+  already on that product or better. The cell is *defined* as the highest-value
   third of the base, and the highest-value third is mechanically the customers
-  at the top of the plan ladder. The action contradicts the definition of the
+  at the top of the product ladder. The action contradicts the definition of the
   segment it was written for.
 - **Reprice** wants to move a low-usage customer onto a plan that fits — a move
   *down* — and every offer of that type moves up. It got coded to the nearest

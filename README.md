@@ -5,9 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
 Customer-analytics evidence on a single **synthetic, causal, reproducible**
-dataset: one data model feeding a series of cases — churn, next-best-offer,
-campaign incrementality, actionable segmentation, and the value work built on
-top of them.
+fintech dataset: one data model feeding a series of cases — churn,
+next-best-offer, campaign incrementality, actionable segmentation, and the value
+work built on top of them.
 
 <p align="center">
   <img src="03-next-best-offer/outputs/gates.svg" alt="Each governance gate removes customers from the contact list, and the groups they remove went on to churn at anywhere from 11.7% to 24.4% against a base of 11.8% — the cool-off window removes the riskiest of them" width="820"/>
@@ -44,8 +44,11 @@ is there.
 ## The foundation: [`data-model/`](data-model/)
 
 A seeded generator emits 15 related tables with an explicit causal structure, so
-the cases are demonstrable rather than circular. Three design decisions carry
-most of the weight:
+the cases are demonstrable rather than circular. The world is a card issuer —
+customers on prepaid and credit products, monthly activity, statements and
+arrears, support, consent and campaigns — because that is the shape most
+customer-intelligence work takes, whatever the industry name on the door. Three
+design decisions carry most of the weight:
 
 - The churn label is emitted at **two observation cutoffs**, which is what lets a
   case train on the past and score the future instead of asserting that it did.

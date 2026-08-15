@@ -30,8 +30,9 @@ for path in (str(_CASE), str(_CHURN), str(_INCREMENTALITY), str(_DATA_MODEL)):
         sys.path.insert(0, path)
 
 import pytest  # noqa: E402
+from fintech import Config  # noqa: E402
 from nbo import load_consent, load_offers, load_tables, run_case  # noqa: E402
-from nbo.data import ContactHistory, PlanLadder, month_calendar, priced_offers  # noqa: E402
+from nbo.data import ContactHistory, ProductLadder, month_calendar, priced_offers  # noqa: E402
 from nbo.policy import (  # noqa: E402
     CONSENT,
     COOL_OFF,
@@ -41,7 +42,6 @@ from nbo.policy import (  # noqa: E402
     evaluate,
 )
 from nbo.value import _campaign_training_rows  # noqa: E402
-from telco import Config  # noqa: E402
 
 SEED = Config(seed=123, n_customers=800, n_months=18)
 
@@ -136,15 +136,15 @@ def test_consent_blocks_exactly_the_customers_who_did_not_opt_in(tables, result)
 
 def test_an_upgrade_offer_is_refused_to_customers_already_above_it(tables, result):
     """The rule that a quarter of a real base fails, expressed as an assertion."""
-    ladder = PlanLadder.build(tables)
-    plan_of = {r["customer_id"]: r["current_plan_id"] for r in tables["customers"]}
+    ladder = ProductLadder.build(tables)
+    product_of = {r["customer_id"]: r["current_product_id"] for r in tables["customers"]}
     upgrades = [o for o in result.catalogue if o.upgrade_to_rank is not None]
     assert upgrades, "the catalogue should contain at least one upgrade offer"
 
     for offer in upgrades:
         for cid in result.wave.customer_ids[:200]:
             refused = ELIG_NOT_AN_UPGRADE in result.matrix.permissions[(cid, offer.offer_id)].blocked_by
-            assert refused == (ladder.rank[plan_of[cid]] >= offer.upgrade_to_rank)
+            assert refused == (ladder.rank[product_of[cid]] >= offer.upgrade_to_rank)
 
 
 # --- the policy really is data ----------------------------------------------
@@ -156,7 +156,7 @@ def test_changing_a_policy_row_changes_the_decision(tables, result):
     If the contact policy were hardcoded, every other test in this file would
     still pass. This is the one that would not.
     """
-    ladder = PlanLadder.build(tables)
+    ladder = ProductLadder.build(tables)
     consent = load_consent(tables)
     history = ContactHistory.build(tables)
     facts = CustomerFacts.build(tables, result.wave.cutoff, result.wave.customer_ids)
@@ -297,7 +297,7 @@ def test_the_audit_applies_no_rule_that_needs_the_future(tables, result):
     from nbo.audit import audit_retention_campaigns  # noqa: PLC0415
 
     consent = load_consent(tables)
-    ladder = PlanLadder.build(tables)
+    ladder = ProductLadder.build(tables)
     before = {a.campaign_id: a.reach.permitted
               for a in audit_retention_campaigns(tables, result.catalogue, ladder, consent)}
     after = {a.campaign_id: a.reach.permitted
@@ -320,12 +320,12 @@ def test_growth_offers_are_discounted_by_churn_risk(tables, result):
     """
     from nbo.value import offer_value  # noqa: PLC0415
 
-    ladder = PlanLadder.build(tables)
+    ladder = ProductLadder.build(tables)
     offer = next(o for o in result.catalogue if not o.is_retention)
-    plan_id = next(r["current_plan_id"] for r in tables["customers"])
+    product_id = next(r["current_product_id"] for r in tables["customers"])
 
     def value(risk: float) -> float:
-        return offer_value(offer, "C000000", plan_id, risk, 0.2, 30.0,
+        return offer_value(offer, "C000000", product_id, risk, 0.2, 30.0,
                            ladder, result.economics).expected_value
 
     assert value(0.5) < value(0.05)

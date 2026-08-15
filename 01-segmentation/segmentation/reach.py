@@ -26,7 +26,7 @@ _NBO = str(_TRACK / "03-next-best-offer")
 if _NBO not in sys.path:
     sys.path.insert(0, _NBO)
 
-from nbo.data import ContactHistory, PlanLadder, load_consent, load_offers  # noqa: E402
+from nbo.data import ContactHistory, ProductLadder, load_consent, load_offers  # noqa: E402
 from nbo.policy import ELIG_FAMILY, ELIG_NOT_AN_UPGRADE, ContactPolicy, CustomerFacts, evaluate  # noqa: E402
 
 from .data import Snapshot  # noqa: E402
@@ -109,7 +109,7 @@ def build_permissions(tables, snapshot: Snapshot) -> PermissionView:
         snapshot.customer_ids,
         snapshot.cutoff,
         ContactPolicy.load(tables),
-        PlanLadder.build(tables),
+        ProductLadder.build(tables),
         load_consent(tables),
         ContactHistory.build(tables),
         CustomerFacts.build(tables, snapshot.cutoff, snapshot.customer_ids),
