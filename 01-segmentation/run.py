@@ -23,7 +23,14 @@ sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "data-model"))
 
 from segmentation import load_tables, run_case  # noqa: E402
-from segmentation.charts import axes_chart, drift_chart, grid_chart, reach_chart  # noqa: E402
+from segmentation.charts import (  # noqa: E402
+    GRID_TEXT_ES,
+    SEGMENT_NAMES_ES,
+    axes_chart,
+    drift_chart,
+    grid_chart,
+    reach_chart,
+)
 from segmentation.pipeline import MEASURED_SAVE_RATE  # noqa: E402
 from segmentation.report import render  # noqa: E402
 from telco import Config  # noqa: E402
@@ -64,6 +71,11 @@ def main() -> None:
     written = {
         "report.md": render(result),
         "grid.svg": grid_chart(result.segments, bands=args.bands),
+        # Same figure, same numbers, Spanish furniture. This is the chart of the
+        # case that gets embedded in a Spanish-language page, so it needs to be
+        # readable there; it comes out of this same run, never edited by hand.
+        "grid.es.svg": grid_chart(result.segments, bands=args.bands,
+                                  text=GRID_TEXT_ES, names=SEGMENT_NAMES_ES),
         "axes.svg": axes_chart(result.letters, result.repaired_recency),
         "drift.svg": drift_chart(result.honest_migration),
         "reach.svg": reach_chart(result.deliverability),
