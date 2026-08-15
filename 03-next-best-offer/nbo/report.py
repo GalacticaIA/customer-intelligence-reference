@@ -16,8 +16,8 @@ RULE_LABELS = {
     "max_contacts_per_365d": "at the yearly contact cap",
     "max_failed_invoices_6m": "in arrears",
     "block_if_unresolved_escalation": "open unresolved complaint",
-    "ELIG_FAMILY": "offer not sold to that plan family",
-    "ELIG_NOT_AN_UPGRADE": "already on that plan or better",
+    "ELIG_FAMILY": "offer not sold to that product family",
+    "ELIG_NOT_AN_UPGRADE": "already on that product or better",
 }
 
 # Only the gates chart is rendered in Spanish (``run.py`` writes it next to the
@@ -300,7 +300,7 @@ def _plans(result: CaseResult) -> list[str]:
     lines = [
         "## Three lists",
         "",
-        "![From promised plan to sendable list](plans.svg)",
+        "![From promised list to sendable list](plans.svg)",
         "",
         "The same scores and the same rules, assembled three ways.",
         "",

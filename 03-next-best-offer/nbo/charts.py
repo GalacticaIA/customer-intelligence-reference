@@ -265,7 +265,7 @@ def plans_chart(steps: list[tuple[str, float]], totals: list[tuple[str, float, i
     # No x-axis caption: the two-line column labels reach the bottom of the
     # frame, and a caption under them collides with every second one.
     body.append(_text(18, 34, "expected value of the wave", anchor="start", size=10))
-    return _svg(body, "Expected value from the promised plan to the sendable list")
+    return _svg(body, "Expected value from the promised list to the sendable list")
 
 
 def reach_chart(decompositions, labels: dict[str, str]) -> str:

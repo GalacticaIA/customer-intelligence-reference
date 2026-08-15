@@ -40,7 +40,7 @@ from churn.economics import Economics  # noqa: E402
 from churn.features import FEATURE_NAMES, build_features  # noqa: E402
 from churn.model import CollinearityFilter, LogisticRegression, Standardiser  # noqa: E402
 
-from .data import Offer, PlanLadder, Tables, _float, _int, month_calendar  # noqa: E402
+from .data import Offer, ProductLadder, Tables, _float, _int, month_calendar  # noqa: E402
 
 # Measured by case 05 against its held-out control. Case 02 assumed 25%; the
 # experiment could not reject that, but it also could not reject zero, and the
@@ -65,10 +65,10 @@ class OfferEconomics:
         ("sms", 0.25),
         ("call", 1.50),   # case 02's contact cost — an outbound call
     )
-    # A data bundle's incremental monthly revenue. The catalogue records the
-    # bundle in GB, not in money, so this is an assumption and is priced as
-    # roughly a fifth of a mid-tier plan.
-    data_bundle_monthly_price: float = 4.00
+    # A limit increase's incremental monthly revenue. The catalogue records the
+    # increase in thousands of limit, not in money, so this is an assumption and
+    # is priced as roughly a fifth of a mid-tier product's fee.
+    limit_increase_monthly_price: float = 4.00
 
     @property
     def channel_cost(self) -> dict[str, float]:
@@ -103,24 +103,24 @@ class OfferValue:
     contact_cost: float
 
 
-def _upgrade_gain(offer: Offer, plan_id: str, ladder: PlanLadder) -> float:
+def _upgrade_gain(offer: Offer, product_id: str, ladder: ProductLadder) -> float:
     """Incremental monthly revenue from taking an upgrade offer."""
     if offer.upgrade_to_rank is None:
         return 0.0
-    target = ladder.target_plan(plan_id, offer.upgrade_to_rank)
+    target = ladder.target_plan(product_id, offer.upgrade_to_rank)
     if target is None:
         return 0.0
-    return max(0.0, ladder.fee[target] - ladder.fee[plan_id])
+    return max(0.0, ladder.fee[target] - ladder.fee[product_id])
 
 
 def offer_value(
     offer: Offer,
     customer_id: str,
-    plan_id: str,
+    product_id: str,
     churn_probability: float,
     acceptance: float,
     monthly_revenue: float,
-    ladder: PlanLadder,
+    ladder: ProductLadder,
     economics: OfferEconomics,
 ) -> OfferValue:
     """Expected margin from making this offer to this customer, net of cost."""
@@ -143,9 +143,9 @@ def offer_value(
                           value, 1.0, churn_probability, contact_cost)
 
     if offer.type == "upgrade":
-        monthly_gain = _upgrade_gain(offer, plan_id, ladder)
+        monthly_gain = _upgrade_gain(offer, product_id, ladder)
     else:
-        monthly_gain = economics.data_bundle_monthly_price
+        monthly_gain = economics.limit_increase_monthly_price
 
     # Growth revenue only arrives if the customer is still here to pay it. This
     # is the join between the two models, and leaving it out is what lets an
@@ -282,11 +282,11 @@ def score_offers(
     churn_probability: dict[str, float],
     acceptance: dict[str, dict[str, float]],
     revenue: dict[str, float],
-    ladder: PlanLadder,
+    ladder: ProductLadder,
     economics: OfferEconomics,
 ) -> dict[tuple[str, str], OfferValue]:
     """Expected value for every (customer, offer) pair."""
-    plan_of = {r["customer_id"]: r["current_plan_id"] for r in tables["customers"]}
+    product_of = {r["customer_id"]: r["current_product_id"] for r in tables["customers"]}
 
     values = {}
     for cid in customer_ids:
@@ -294,7 +294,7 @@ def score_offers(
             values[(cid, offer.offer_id)] = offer_value(
                 offer=offer,
                 customer_id=cid,
-                plan_id=plan_of[cid],
+                product_id=product_of[cid],
                 churn_probability=churn_probability[cid],
                 acceptance=acceptance[offer.objective][cid],
                 monthly_revenue=revenue[cid],

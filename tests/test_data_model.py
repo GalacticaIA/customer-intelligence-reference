@@ -1,4 +1,4 @@
-"""Contract tests for the synthetic telco data model.
+"""Contract tests for the synthetic fintech data model.
 
 These run on the standard library alone (no numpy/pandas), so CI's ``uvx pytest``
 executes them without installing project dependencies. They assert three things:
@@ -25,7 +25,7 @@ _DM = Path(__file__).resolve().parent.parent / "data-model"
 sys.path.insert(0, str(_DM))
 
 import pytest  # noqa: E402
-from telco import Config, generate  # noqa: E402
+from fintech import Config, generate  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -45,7 +45,7 @@ def test_all_expected_tables_present(tables):
 def test_primary_keys_unique(tables):
     _, t = tables
     pks = {
-        "plans": "plan_id",
+        "products": "product_id",
         "offers": "offer_id",
         "campaigns": "campaign_id",
         "customers": "customer_id",
@@ -66,16 +66,16 @@ def test_primary_keys_unique(tables):
 def test_foreign_keys_resolve(tables):
     _, t = tables
     customer_ids = {r["customer_id"] for r in t["customers"]}
-    plan_ids = {r["plan_id"] for r in t["plans"]}
+    product_ids = {r["product_id"] for r in t["products"]}
     offer_ids = {r["offer_id"] for r in t["offers"]}
 
     for r in t["subscriptions"]:
         assert r["customer_id"] in customer_ids
-        assert r["plan_id"] in plan_ids
+        assert r["product_id"] in product_ids
     for r in t["campaigns"]:
         assert r["offer_id"] in offer_ids
     # Every fact table's customer_id must be a known customer.
-    for name in ("usage_monthly", "billing", "digital_monthly",
+    for name in ("activity_monthly", "billing", "digital_monthly",
                  "support_interactions", "consent", "campaign_exposures", "churn_labels"):
         for r in t[name]:
             assert r["customer_id"] in customer_ids, f"{name} references unknown customer"
@@ -93,7 +93,7 @@ def test_no_leakage_facts_are_pre_cutoff(tables):
     model would be trained on the future it is meant to predict."""
     _, t = tables
     cutoff = date.fromisoformat(t["churn_labels"][0]["observation_cutoff"])
-    for name in ("usage_monthly", "billing", "digital_monthly", "support_interactions"):
+    for name in ("activity_monthly", "billing", "digital_monthly", "support_interactions"):
         for r in t[name]:
             period = date.fromisoformat(r["period_month"])
             assert period <= cutoff, f"{name} has a fact dated after the cutoff"
@@ -191,7 +191,7 @@ def test_upgrade_offers_declare_the_plan_they_upgrade_to(tables):
     """
     _, t = tables
     ranks = {}
-    for row in t["plans"]:
+    for row in t["products"]:
         ranks.setdefault(row["family"], []).append(int(row["tier"]))
     depth = max(len(tiers) for tiers in ranks.values())
 
@@ -210,7 +210,7 @@ def test_churn_base_rate_is_plausible(tables):
     _, t = tables
     churn = [r["churned_next_90d"] for r in t["churn_labels"]]
     rate = sum(churn) / len(churn)
-    # Realistic telco 90-day window; wide bounds so it is robust to the seed.
+    # Realistic fintech 90-day window; wide bounds so it is robust to the seed.
     assert 0.05 < rate < 0.25, f"implausible churn base rate {rate:.1%}"
 
 

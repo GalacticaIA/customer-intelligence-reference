@@ -25,7 +25,7 @@ from .features import FEATURE_NAMES, build_features, build_leaky_feature
 from .metrics import Evaluation, evaluate
 from .model import CollinearityFilter, LogisticRegression, PlattCalibrator, Standardiser, sigmoid
 
-# The signs the data model was *built* with (see data-model/telco/config.py).
+# The signs the data model was *built* with (see data-model/fintech/config.py).
 # Checking the fitted coefficients against them is a test of the whole pipeline
 # that no real dataset can offer: here the right answer is known, so "the model
 # recovered the design" is verifiable rather than a matter of taste.

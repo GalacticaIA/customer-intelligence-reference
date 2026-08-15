@@ -151,7 +151,7 @@ def render(result: CaseResult) -> str:
         "gets explained wrong.")
     add("")
     inconclusive = len(designed) - recovered - contradicted
-    add(f"Because this dataset's causal structure is *known* (`data-model/telco/config.py`), the last column is "
+    add(f"Because this dataset's causal structure is *known* (`data-model/fintech/config.py`), the last column is "
         f"a real check rather than a matter of taste. Of the {len(designed)} designed drivers that survive "
         f"pruning: **{recovered} recovered** with the correct sign, **{contradicted} contradicted**, "
         f"and **{inconclusive} are too weak to read individually** — their marginal effect is smaller than its "

@@ -26,7 +26,7 @@ from .audit import CampaignAudit, ReachDecomposition, audit_retention_campaigns
 from .data import (
     ContactHistory,
     Offer,
-    PlanLadder,
+    ProductLadder,
     Wave,
     build_wave,
     load_consent,
@@ -54,7 +54,7 @@ __all__ = [
     "PermissionMatrix",
     "Plan",
     "PlanComparison",
-    "PlanLadder",
+    "ProductLadder",
     "ReachDecomposition",
     "RuleCost",
     "SensitivityPoint",

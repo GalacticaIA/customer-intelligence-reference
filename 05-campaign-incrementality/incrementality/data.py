@@ -23,7 +23,7 @@ _DATA_MODEL = Path(__file__).resolve().parents[2] / "data-model"
 if str(_DATA_MODEL) not in sys.path:
     sys.path.insert(0, str(_DATA_MODEL))
 
-from telco import Config, generate  # noqa: E402
+from fintech import Config, generate  # noqa: E402
 
 Tables = dict[str, list[dict]]
 
@@ -77,7 +77,7 @@ def month_calendar(tables: Tables) -> list[str]:
     The campaigns table dates itself by ``month_index``; the fact tables date
     themselves by month. This is the join between them.
     """
-    return sorted({r["period_month"] for r in tables["usage_monthly"]})
+    return sorted({r["period_month"] for r in tables["activity_monthly"]})
 
 
 def load_campaigns(tables: Tables) -> list[Campaign]:

@@ -44,7 +44,7 @@ rather than one.
 
 ## The order you apply the rules in costs more than the rules
 
-![From promised plan to sendable list](outputs/plans.svg)
+![From promised list to sendable list](outputs/plans.svg)
 
 | List | Contacts | Expected value | Actual churn of those contacted |
 |---|---:|---:|---:|
@@ -162,7 +162,7 @@ without them.
 03-next-best-offer/
 ├── run.py                  # CLI: decide, write outputs/
 ├── nbo/
-│   ├── data.py             # the wave, the plan ladder, the offer catalogue, contact history
+│   ├── data.py             # the wave, the product ladder, the offer catalogue, contact history
 │   ├── policy.py           # the rule engine — every refusal attributed to a rule
 │   ├── value.py            # expected value per customer x offer; the acceptance model
 │   ├── allocation.py       # capacity, and the three ways to assemble a list

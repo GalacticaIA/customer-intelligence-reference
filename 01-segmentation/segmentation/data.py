@@ -30,7 +30,7 @@ for _dependency in ("data-model", "02-churn-prediction"):
 from churn.data import Population, scoreable_population  # noqa: E402
 from churn.features import FEATURE_NAMES, build_features  # noqa: E402
 from churn.model import CollinearityFilter, LogisticRegression, PlattCalibrator, Standardiser  # noqa: E402
-from telco import Config, generate  # noqa: E402
+from fintech import Config, generate  # noqa: E402
 
 Tables = dict[str, list[dict]]
 

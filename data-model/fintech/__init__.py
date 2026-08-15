@@ -1,4 +1,4 @@
-"""Synthetic telco customer-intelligence data model.
+"""Synthetic fintech customer-intelligence data model.
 
 The shared, causal, reproducible dataset that the five customer-analytics cases
 (segmentation, churn, next-best-offer, ARPU, incrementality) all read from.

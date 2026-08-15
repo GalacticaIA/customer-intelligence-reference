@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the synthetic telco customer-intelligence dataset.
+"""Generate the synthetic fintech customer-intelligence dataset.
 
 Reproducible: same seed -> byte-for-byte identical CSVs on any machine.
 
@@ -13,7 +13,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from telco import Config, generate, write_tables
+from fintech import Config, generate, write_tables
 
 
 def main() -> None:

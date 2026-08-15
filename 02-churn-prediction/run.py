@@ -22,7 +22,7 @@ from churn import load_tables, run_case  # noqa: E402
 from churn.charts import calibration_chart, gains_chart, profit_chart  # noqa: E402
 from churn.economics import Economics  # noqa: E402
 from churn.report import render  # noqa: E402
-from telco import Config  # noqa: E402
+from fintech import Config  # noqa: E402
 
 
 def main() -> None:

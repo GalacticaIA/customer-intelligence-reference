@@ -13,8 +13,8 @@ from .pipeline import CaseResult
 # The two product rules, as a reader would say them. Same wording case 03 uses,
 # so a reader moving between the two reports is not learning new names.
 RULE_LABELS = {
-    "ELIG_FAMILY": "offer not sold to that plan family",
-    "ELIG_NOT_AN_UPGRADE": "already on that plan or better",
+    "ELIG_FAMILY": "offer not sold to that product family",
+    "ELIG_NOT_AN_UPGRADE": "already on that product or better",
 }
 
 
@@ -79,7 +79,7 @@ def _rfm(result: CaseResult) -> list[str]:
         "## First, the segmentation everyone already has",
         "",
         "RFM is the default, it is what a segmentation request usually means, and it is "
-        "computed here exactly as prescribed — on `billing`, the transaction table of a telco. "
+        "computed here exactly as prescribed — on `billing`, the transaction table of a fintech. "
         "Then each dimension is measured.",
         "",
         "| | Dimension | Distinct values | Largest single value covers | Churn gap, top vs bottom fifth |",
@@ -197,7 +197,7 @@ def _stability(result: CaseResult) -> list[str]:
         f"band moved for {_pct(honest.share(honest.risk_band_changed))} and the value band for "
         f"{_pct(honest.share(honest.value_band_changed))}.",
         "",
-        "That asymmetry is the structural point. ARPU is the plan the customer is on — a "
+        "That asymmetry is the structural point. ARPU is the product the customer is on — a "
         "commercial fact that changes when somebody signs something. Risk is behaviour, and "
         "behaviour is what the model is built to detect moving. **The grid crosses a photograph "
         "with a film**, and inherits the refresh rate of the film.",
@@ -287,7 +287,7 @@ def _delivery(result: CaseResult) -> list[str]:
         "",
         "The mechanism is not a coincidence: arrears, an open unresolved complaint and a recent "
         "contact are simultaneously the rules that suppress a contact and the facts the risk "
-        "model reads as danger. Case 03 measured this gate by gate; here it lands on the plan.",
+        "model reads as danger. Case 03 measured this gate by gate; here it lands on the product.",
         "",
         "**What is not claimed:** that reachability falls monotonically with risk. "
         + ("It does not — cell by cell the ordering breaks, and "
@@ -321,12 +321,12 @@ def _delivery(result: CaseResult) -> list[str]:
                 lines.append(
                     f"{head} The cell is the highest-value third of the base, and the "
                     "highest-value third is, mechanically, the customers already at the top of "
-                    "the plan ladder. The action contradicts the definition of the segment it "
+                    "the product ladder. The action contradicts the definition of the segment it "
                     "was written for."
                 )
             else:
                 lines.append(
-                    f"{head} The play asks for the plan that *fits* a low-usage customer, which "
+                    f"{head} The play asks for the product that *fits* a low-usage customer, which "
                     "is a move down the ladder. Every offer of this type is a move up — "
                     "`upgrade_to_rank` only points at a higher rank — so the nearest available "
                     "offer type was the one it got coded to. The catalogue has no entry for what "

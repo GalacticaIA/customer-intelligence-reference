@@ -1,6 +1,6 @@
 """Churn without leakage — a reproducible, dependency-free churn pipeline.
 
-Reads the shared telco data model, builds features strictly as of an observation
+Reads the shared fintech data model, builds features strictly as of an observation
 cutoff, trains at an earlier cutoff and scores a later one (out-of-time), then
 judges the result on discrimination, **calibration**, explainable drivers and
 the only thing a retention team can act on: expected value per contact.
