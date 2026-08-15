@@ -71,7 +71,55 @@ def _nice_ticks(lo: float, hi: float, count: int = 5) -> list[float]:
     return ticks
 
 
-def grid_chart(segments, bands: int = 3) -> str:
+GRID_TEXT = {
+    "aria": "The risk-by-value grid and the expected value of each cell",
+    "heading": "{cells} cells, {worth} worth contacting",
+    "subhead": "expected profit per customer, at case 05's measured save rate",
+    "members": "{count:,} customers",
+    "churn": "churn {rate:.1%}",
+    "risk": ("low risk", "mid risk", "high risk"),
+    "value": ("low value", "mid value", "high value"),
+    "pad_l": PAD_L,
+}
+
+# Same figure, same numbers, Spanish furniture — the same reason case 03 gives for
+# `gates.es.svg`: it is embedded in a Spanish-language page, and a figure whose
+# caption is in one language and whose labels are in another asks the reader to
+# trust what they cannot read.
+#
+# Segment names are translated too, and they are the tight constraint: they are
+# centred in a cell of about 200px and Spanish runs longer, so these are chosen to
+# fit rather than to translate literally.
+GRID_TEXT_ES = {
+    "aria": "La grilla de riesgo por valor y el valor esperado de cada celda",
+    "heading": "{cells} celdas, {worth} justifican un contacto",
+    "subhead": "beneficio esperado por cliente, con la tasa de retención medida en el caso 05",
+    "members": "{count:,} clientes",
+    "churn": "abandono {rate:.1%}",
+    "risk": ("riesgo bajo", "riesgo medio", "riesgo alto"),
+    "value": ("valor bajo", "valor medio", "valor alto"),
+    # Wider left gutter than the English figure, and this is the reason: the risk
+    # labels are right-aligned against it, and "riesgo medio" is half again as long
+    # as "mid risk" — at the shared 62px it ran off the left edge of the canvas.
+    # Giving Spanish its own gutter keeps the English file byte-for-byte unchanged.
+    "pad_l": 84,
+}
+
+SEGMENT_NAMES_ES = {
+    "Rescue": "Rescatar",
+    "Rescue (economy)": "Rescatar (económico)",
+    "Let go": "Dejar ir",
+    "Protect": "Proteger",
+    "Watch": "Observar",
+    "Reprice": "Reajustar plan",
+    "Grow": "Crecer",
+    "Grow (bundle)": "Crecer (paquete)",
+    "Self-serve": "Autogestión",
+}
+
+
+def grid_chart(segments, bands: int = 3, text: dict | None = None,
+               names: dict[str, str] | None = None) -> str:
     """The grid itself, and the handful of cells that pay for a contact.
 
     The deliverable of a segmentation is usually presented as the segments. It
@@ -79,23 +127,25 @@ def grid_chart(segments, bands: int = 3) -> str:
     expected value per customer, and "do not contact these people" is the part
     of the output that survives meeting a budget.
     """
+    text = text or GRID_TEXT
+    names = names or {}
+    pad_l = text.get("pad_l", PAD_L)
     by_key = {s.key: s for s in segments}
-    cell_w = (W - PAD_L - PAD_R) / bands
+    cell_w = (W - pad_l - PAD_R) / bands
     cell_h = 92.0
     top = PAD_T + 26
     height = top + bands * cell_h + 44
 
     worth = sum(1 for s in segments if s.worth_contacting)
-    body = [_text(18, 20, f"{len(segments)} cells, {worth} worth contacting",
+    body = [_text(18, 20, text["heading"].format(cells=len(segments), worth=worth),
                   anchor="start", size=13)]
-    body.append(_text(18, 36, "expected profit per customer, at case 05's measured save rate",
-                      anchor="start", size=10))
+    body.append(_text(18, 36, text["subhead"], anchor="start", size=10))
 
     for row in range(bands):                       # risk: highest band on top
         risk_band = bands - 1 - row
         for column in range(bands):                # value: lowest on the left
             segment = by_key.get((risk_band, column))
-            x = PAD_L + column * cell_w
+            x = pad_l + column * cell_w
             y = top + row * cell_h
             if segment is None:
                 continue
@@ -108,23 +158,25 @@ def grid_chart(segments, bands: int = 3) -> str:
                 f'stroke="{colour}" stroke-opacity="{0.55 if positive else 0.22}" stroke-width="1"/>'
             )
             centre = x + cell_w / 2
-            body.append(_text(centre, y + 26, segment.name, size=12, weight="bold",
+            body.append(_text(centre, y + 26, names.get(segment.name, segment.name),
+                              size=12, weight="bold",
                               fill=INK if positive else INK, opacity=1.0 if positive else 0.75))
-            body.append(_text(centre, y + 45, f"{len(segment):,} customers", size=10))
+            body.append(_text(centre, y + 45, text["members"].format(count=len(segment)), size=10))
             body.append(_text(centre, y + 66, f"{segment.expected_value_per_customer:+.2f}",
                               size=15, weight="bold", fill=POSITIVE if positive else ACCENT))
-            body.append(_text(centre, y + 81, f"churn {segment.realised_churn:.1%}", size=9))
+            body.append(_text(centre, y + 81,
+                              text["churn"].format(rate=segment.realised_churn), size=9))
 
     for row in range(bands):
-        label = ("low risk", "mid risk", "high risk")[bands - 1 - row]
-        body.append(_text(PAD_L - 10, top + row * cell_h + cell_h / 2, label,
+        label = text["risk"][bands - 1 - row]
+        body.append(_text(pad_l - 10, top + row * cell_h + cell_h / 2, label,
                           anchor="end", size=10))
     for column in range(bands):
-        label = ("low value", "mid value", "high value")[column]
-        body.append(_text(PAD_L + column * cell_w + cell_w / 2, top + bands * cell_h + 18,
+        label = text["value"][column]
+        body.append(_text(pad_l + column * cell_w + cell_w / 2, top + bands * cell_h + 18,
                           label, size=10))
 
-    return _svg(body, "The risk-by-value grid and the expected value of each cell", height)
+    return _svg(body, text["aria"], height)
 
 
 def axes_chart(letters, repaired) -> str:
