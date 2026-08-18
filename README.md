@@ -156,11 +156,6 @@ cd ../03-next-best-offer && uv run run.py
 Each case directory holds its own `README.md` with the full method and an
 `outputs/` with the charts and the write-up it produced.
 
-## What changed, and when
-
-There is no changelog file. What shipped lives in the commits and in the issues each one
-closes, which is where the reasoning is anyway.
-
 ## Tests
 
 ```bash
