@@ -94,4 +94,6 @@ class Config:
             "churn_labels",
             "churn_labels_prior",
             "churn_potential_outcomes",
+            "digital_funnel_steps",
+            "digital_funnel_events",
         )

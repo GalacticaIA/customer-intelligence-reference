@@ -45,6 +45,8 @@ Reference dimensions are tiny and fixed; facts scale with the population.
 | `support_interactions` | one ticket | `ticket_id` | reason, channel, escalated, resolved, csat |
 | `consent` | customer × channel | (`customer_id`,`channel`) | opt-in per email/sms/push/call |
 | `campaign_exposures` | customer × campaign | `exposure_id` | **exposed vs control**, responded |
+| `digital_funnel_steps` | one row per step | `step_id` | ordered bilingual catalog for a digital-origination journey |
+| `digital_funnel_events` | journey × reached step | (`journey_id`,`step_id`) | anonymous synthetic events from product visit to first transaction |
 | `churn_labels` | one row per customer | `customer_id` | `churned_next_90d`, `observation_cutoff`, `churn_date` |
 | `churn_labels_prior` | one row per customer alive at the earlier cutoff | `customer_id` | same label, observed `prior_cutoff_offset` months earlier — see below |
 | `churn_potential_outcomes` | customer × cutoff | (`customer_id`,`observation_cutoff`) | **the answer key** — `churned_next_90d_if_no_campaign`, `treated`. See below |
@@ -182,3 +184,13 @@ data-model/
 Tests live one level up in `../tests/` and run on the standard library, so CI
 validates schema, referential integrity, the no-leakage property and the
 presence of causal signal on every push.
+
+## Digital-originations journeys
+
+`digital_funnel_events` is intentionally separate from `customers`. A visitor
+who abandons before activation is not yet a customer, and forcing that visitor
+into the customer master would make the funnel look complete by construction.
+Each anonymous journey starts at `visit` and can only advance through the
+ordered `digital_funnel_steps` catalog. The generator uses a dedicated seeded
+random stream appended after the existing model, so adding this evidence does
+not change any previously published customer-analytics result.

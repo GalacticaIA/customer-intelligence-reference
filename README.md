@@ -4,10 +4,10 @@
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
-Customer-analytics evidence on a single **synthetic, causal, reproducible**
+Customer and digital-analytics evidence on a single **synthetic, causal, reproducible**
 fintech dataset: one data model feeding a series of cases — churn,
-next-best-offer, campaign incrementality, actionable segmentation, and the value
-work built on top of them.
+next-best-offer, campaign incrementality, actionable segmentation, value and a
+digital-originations funnel.
 
 <p align="center">
   <img src="03-next-best-offer/outputs/gates.svg" alt="Each governance gate removes customers from the contact list, and the groups they remove went on to churn at anywhere from 11.7% to 24.4% against a base of 11.8% — the cool-off window removes the riskiest of them" width="820"/>
@@ -25,8 +25,8 @@ work built on top of them.
 
 ## Why this exists
 
-**Customer & Digital Analytics** is one of the four service lines at
-[GalacticaIA](https://galacticaia.com/servicios), and this is its open reference
+**Customer & Digital Intelligence** and **Advanced Analytics & Machine Learning**
+are two of GalacticaIA's five practices. This repository is their open reference
 implementation — what we do, in code you can run, instead of a description of
 what we would do.
 
@@ -36,14 +36,13 @@ with consent and eligibility resolved, uplift that isn't confounded by who you
 targeted. So the foundation is a dataset built to make those problems real rather
 than to make a model look good on them.
 
-That ordering is the firm's position, not a preference: analytics on data with no
-owner, no quality and no lineage produces decisions nobody can defend once
-someone challenges them. These cases are what it looks like when the foundation
-is there.
+Governance, platform and analytics concerns are combined when a case needs them;
+none is a mandatory commercial entry point. These cases make the analytical
+decision, its assumptions and its operating constraints inspectable.
 
 ## The foundation: [`data-model/`](data-model/)
 
-A seeded generator emits 15 related tables with an explicit causal structure, so
+A seeded generator emits 17 related tables with an explicit causal structure, so
 the cases are demonstrable rather than circular. The world is a card issuer —
 customers on prepaid and credit products, monthly activity, statements and
 arrears, support, consent and campaigns — because that is the shape most
@@ -77,6 +76,7 @@ Each case is a reproducible pipeline, a visible result and a permanent write-up.
 | 03 | [Governed next-best-offer](03-next-best-offer/) | propensity/uplift **and** eligibility, consent, exclusions, contact policy | **built** |
 | 04 | ARPU / value decomposition | where revenue per user comes from and moves | planned |
 | 05 | [Campaign incrementality](05-campaign-incrementality/) | true uplift vs the confounded naive read, and whether the experiment was big enough to tell | **built** |
+| 06 | [Digital conversion funnel](06-digital-conversion-funnel/) | where a digital-originations journey loses people and which transition deserves an experiment | **built** |
 
 **[03 · Governed next-best-offer](03-next-best-offer/)** — the case to read first
 if the question is *"does governance slow the business down?"*. It decides who to
@@ -164,6 +164,6 @@ uvx pytest tests/ -q
 
 ---
 
-Built by **GalacticaIA** — a data firm in LATAM, software-agnostic, with
-governance as the foundation. Services: [galacticaia.com/servicios](https://galacticaia.com/servicios).
+Built by **GalacticaIA** — an integrated, software-agnostic data consultancy in
+LATAM. Services: [galacticaia.com/servicios](https://galacticaia.com/servicios).
 Licensed MIT.
