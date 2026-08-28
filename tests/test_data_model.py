@@ -53,6 +53,7 @@ def test_primary_keys_unique(tables):
         "invoice": None,
         "campaign_exposures": "exposure_id",
         "churn_labels": "customer_id",
+        "digital_funnel_steps": "step_id",
     }
     for table, key in pks.items():
         if key is None:
@@ -79,6 +80,30 @@ def test_foreign_keys_resolve(tables):
                  "support_interactions", "consent", "campaign_exposures", "churn_labels"):
         for r in t[name]:
             assert r["customer_id"] in customer_ids, f"{name} references unknown customer"
+
+
+def test_digital_funnel_is_bound_to_its_step_catalog(tables):
+    """Every journey follows the declared catalog without unknown or skipped steps."""
+    _, t = tables
+    catalog = sorted(t["digital_funnel_steps"], key=lambda row: int(row["position"]))
+    expected = [row["step_id"] for row in catalog]
+    assert [int(row["position"]) for row in catalog] == list(range(1, len(catalog) + 1))
+    assert all(row["label_en"] and row["label_es"] for row in catalog)
+
+    journeys = defaultdict(list)
+    for row in t["digital_funnel_events"]:
+        assert row["step_id"] in expected
+        journeys[row["journey_id"]].append(row)
+
+    assert journeys
+    for journey_id, events in journeys.items():
+        ordered = sorted(events, key=lambda row: row["event_at"])
+        actual = [row["step_id"] for row in ordered]
+        assert actual == expected[:len(actual)], f"{journey_id} skips or reorders a funnel step"
+        assert len(actual) == len(set(actual)), f"{journey_id} repeats a funnel step"
+
+    counts = [sum(row["step_id"] == step for row in t["digital_funnel_events"]) for step in expected]
+    assert all(left >= right > 0 for left, right in zip(counts, counts[1:], strict=False))
 
 
 def test_every_customer_has_churn_label(tables):

@@ -109,6 +109,19 @@ AGE_BANDS = [("18-24", 0.18), ("25-34", 0.30), ("35-44", 0.24), ("45-59", 0.19),
 CONSENT_CHANNELS = ("email", "sms", "push", "call")
 TICKET_REASONS = ("billing", "card", "app", "product_change", "fraud", "other")
 
+# A digital-originations journey, declared as data so the case cannot silently
+# rename, reorder or skip a step. The funnel consumes this catalog and the test
+# suite binds every emitted event back to it.
+DIGITAL_FUNNEL_STEPS = [
+    # step_id, position, label_en, label_es
+    ("visit", 1, "Product visit", "Visita al producto"),
+    ("application_started", 2, "Application started", "Solicitud iniciada"),
+    ("application_submitted", 3, "Application submitted", "Solicitud enviada"),
+    ("approved", 4, "Approved", "Aprobada"),
+    ("activated", 5, "Activated", "Activada"),
+    ("first_transaction", 6, "First transaction", "Primera transacción"),
+]
+
 _PRODUCT_BY_ID = {p[0]: p for p in PRODUCTS}
 
 
@@ -238,8 +251,51 @@ def _emit_reference() -> dict[str, list[dict]]:
         dict(policy_id=p[0], applies_to=p[1], rule=p[2], value=p[3], unit=p[4], rationale=p[5])
         for p in CONTACT_POLICY
     ]
+    funnel_steps = [
+        dict(step_id=s[0], position=s[1], label_en=s[2], label_es=s[3])
+        for s in DIGITAL_FUNNEL_STEPS
+    ]
     return {"products": products, "offers": offers, "campaigns": campaigns,
-            "contact_policy": contact_policy}
+            "contact_policy": contact_policy, "digital_funnel_steps": funnel_steps}
+
+
+def _emit_digital_funnel(cfg: Config) -> list[dict]:
+    """Emit anonymous step events for a synthetic digital-origination funnel.
+
+    This uses its own seeded stream and is appended after every pre-existing
+    table. Adding or changing the case therefore cannot perturb customer,
+    campaign or churn facts that other published cases depend on.
+    """
+    rng = Random(cfg.seed + 6157)
+    step_ids = [step[0] for step in DIGITAL_FUNNEL_STEPS]
+    progression = (0.58, 0.73, 0.64, 0.79, 0.70)
+    channels = ("organic", "paid_search", "partner", "email")
+    start = date(cfg.start_year, cfg.start_month_of_year, 1)
+    rows: list[dict] = []
+
+    # More journeys than customers: visitors who abandon before activation are
+    # intentionally not forced into the customer master.
+    for i in range(cfg.n_customers * 2):
+        journey_id = f"J{i:07d}"
+        channel = channels[rng.randrange(len(channels))]
+        event_at = start + timedelta(days=rng.randrange(max(1, cfg.n_months * 28)))
+        rows.append(dict(
+            journey_id=journey_id,
+            step_id=step_ids[0],
+            event_at=event_at.isoformat(),
+            acquisition_channel=channel,
+        ))
+        for step_id, probability in zip(step_ids[1:], progression, strict=True):
+            if rng.random() >= probability:
+                break
+            event_at += timedelta(minutes=rng.randint(2, 1440))
+            rows.append(dict(
+                journey_id=journey_id,
+                step_id=step_id,
+                event_at=event_at.isoformat(),
+                acquisition_channel=channel,
+            ))
+    return rows
 
 
 def _emit_customers_and_subscriptions(cfg: Config, customers: list[_Customer]):
@@ -588,5 +644,9 @@ def generate(cfg: Config) -> dict[str, list[dict]]:
     # Ground truth for the incrementality case, at both cutoffs. Derived from
     # draws already made, so it too leaves every table above untouched.
     tables["churn_potential_outcomes"] = potential + potential_prior
+
+    # Independent anonymous journeys for case 06. Kept last, with its own RNG,
+    # so the first fifteen tables remain byte-for-byte reproducible.
+    tables["digital_funnel_events"] = _emit_digital_funnel(cfg)
 
     return tables
